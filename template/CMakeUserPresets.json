@@ -1,0 +1,347 @@
+{
+  "version": 9,
+  "configurePresets": [
+    {
+      "name": "msvc-#{ARCHITECTURE}-local",
+      "hidden": true,
+      "inherits": [
+        "non-qt-base",
+        "msvc-base"
+      ],
+      "installDir": "#{INSTALL_DIR}"
+    },
+    {
+      "name": "msvc_#{ARCHITECTURE}_debug",
+      "hidden": true,
+      "inherits": "msvc-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} Debug msvc",
+      "description": "Debug build for msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "environment": {
+        "BUILD_MODE": "debug"
+      }
+    },
+    {
+      "name": "msvc_#{ARCHITECTURE}_relwithdebinfo",
+      "hidden": true,
+      "inherits": "msvc-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} RelWithDebInfo msvc",
+      "description": "RelWithDebInfo build for msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "environment": {
+        "BUILD_MODE": "relwithdebinfo"
+      }
+    },
+    {
+      "name": "msvc_#{ARCHITECTURE}_release",
+      "hidden": true,
+      "inherits": "msvc-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} Release msvc",
+      "description": "Release build for msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "environment": {
+        "BUILD_MODE": "release"
+      }
+    },
+    {
+      "name": "msvc_#{ARCHITECTURE}_minsizerel",
+      "hidden": true,
+      "inherits": "msvc-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} MinSizeRel msvc",
+      "description": "MinSizeRel build for msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      },
+      "environment": {
+        "BUILD_MODE": "minsizerel"
+      }
+    },
+    {
+      "name": "clang-#{ARCHITECTURE}-local",
+      "hidden": true,
+      "inherits": [
+        "non-qt-base",
+        "clang-base"
+      ],
+      "installDir": "#{INSTALL_DIR}"
+    },
+    {
+      "name": "clang_#{ARCHITECTURE}_debug",
+      "hidden": true,
+      "inherits": "clang-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} Debug clang",
+      "description": "Debug build for clang",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "environment": {
+        "BUILD_MODE": "debug"
+      }
+    },
+    {
+      "name": "clang_#{ARCHITECTURE}_relwithdebinfo",
+      "hidden": true,
+      "inherits": "clang-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} RelWithDebInfo clang",
+      "description": "RelWithDebInfo build for clang",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "environment": {
+        "BUILD_MODE": "relwithdebinfo"
+      }
+    },
+    {
+      "name": "clang_#{ARCHITECTURE}_release",
+      "hidden": true,
+      "inherits": "clang-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} Release clang",
+      "description": "Release build for clang",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "environment": {
+        "BUILD_MODE": "release"
+      }
+    },
+    {
+      "name": "clang_#{ARCHITECTURE}_minsizerel",
+      "hidden": true,
+      "inherits": "clang-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} MinSizeRel clang",
+      "description": "MinSizeRel build for clang",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      },
+      "environment": {
+        "BUILD_MODE": "minsizerel"
+      }
+    },
+    {
+      "name": "gcc-#{ARCHITECTURE}-local",
+      "hidden": true,
+      "inherits": [
+        "non-qt-base",
+        "gcc-base"
+      ],
+      "installDir": "#{INSTALL_DIR}"
+    },
+    {
+      "name": "gcc_#{ARCHITECTURE}_debug",
+      "hidden": true,
+      "inherits": "gcc-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} Debug gcc",
+      "description": "Debug build for gcc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "environment": {
+        "BUILD_MODE": "debug"
+      }
+    },
+    {
+      "name": "gcc_#{ARCHITECTURE}_relwithdebinfo",
+      "hidden": true,
+      "inherits": "gcc-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} RelWithDebInfo gcc",
+      "description": "RelWithDebInfo build for gcc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "environment": {
+        "BUILD_MODE": "relwithdebinfo"
+      }
+    },
+    {
+      "name": "gcc_#{ARCHITECTURE}_release",
+      "hidden": true,
+      "inherits": "gcc-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} Release gcc",
+      "description": "Release build for gcc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "environment": {
+        "BUILD_MODE": "release"
+      }
+    },
+    {
+      "name": "gcc_#{ARCHITECTURE}_minsizerel",
+      "hidden": true,
+      "inherits": "gcc-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} MinSizeRel gcc",
+      "description": "MinSizeRel build for gcc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      },
+      "environment": {
+        "BUILD_MODE": "minsizerel"
+      }
+    },
+    {
+      "name": "clang-cl-#{ARCHITECTURE}-local",
+      "hidden": true,
+      "inherits": [
+        "non-qt-base",
+        "clang-cl-base"
+      ],
+      "installDir": "#{INSTALL_DIR}"
+    },
+    {
+      "name": "clang-cl_#{ARCHITECTURE}_debug",
+      "hidden": true,
+      "inherits": "clang-cl-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} Debug clang-cl",
+      "description": "Debug build for clang-cl",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "environment": {
+        "BUILD_MODE": "debug"
+      }
+    },
+    {
+      "name": "clang-cl_#{ARCHITECTURE}_relwithdebinfo",
+      "hidden": true,
+      "inherits": "clang-cl-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} RelWithDebInfo clang-cl",
+      "description": "RelWithDebInfo build for clang-cl",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "environment": {
+        "BUILD_MODE": "relwithdebinfo"
+      }
+    },
+    {
+      "name": "clang-cl_#{ARCHITECTURE}_release",
+      "hidden": true,
+      "inherits": "clang-cl-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} Release clang-cl",
+      "description": "Release build for clang-cl",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "environment": {
+        "BUILD_MODE": "release"
+      }
+    },
+    {
+      "name": "clang-cl_#{ARCHITECTURE}_minsizerel",
+      "hidden": true,
+      "inherits": "clang-cl-#{ARCHITECTURE}-local",
+      "displayName": "#{ARCHITECTURE} MinSizeRel clang-cl",
+      "description": "MinSizeRel build for clang-cl",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      },
+      "environment": {
+        "BUILD_MODE": "minsizerel"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-msvc_#{ARCHITECTURE}_debug",
+      "inherits": "build-base",
+      "configurePreset": "msvc_#{ARCHITECTURE}_debug",
+      "displayName": "Build msvc_#{ARCHITECTURE}_debug"
+    },
+    {
+      "name": "build-msvc_#{ARCHITECTURE}_relwithdebinfo",
+      "inherits": "build-base",
+      "configurePreset": "msvc_#{ARCHITECTURE}_relwithdebinfo",
+      "displayName": "Build msvc_#{ARCHITECTURE}_relwithdebinfo"
+    },
+    {
+      "name": "build-msvc_#{ARCHITECTURE}_release",
+      "inherits": "build-base",
+      "configurePreset": "msvc_#{ARCHITECTURE}_release",
+      "displayName": "Build msvc_#{ARCHITECTURE}_release"
+    },
+    {
+      "name": "build-msvc_#{ARCHITECTURE}_minsizerel",
+      "inherits": "build-base",
+      "configurePreset": "msvc_#{ARCHITECTURE}_minsizerel",
+      "displayName": "Build msvc_#{ARCHITECTURE}_minsizerel"
+    },
+    {
+      "name": "build-clang_#{ARCHITECTURE}_debug",
+      "inherits": "build-base",
+      "configurePreset": "clang_#{ARCHITECTURE}_debug",
+      "displayName": "Build clang_#{ARCHITECTURE}_debug"
+    },
+    {
+      "name": "build-clang_#{ARCHITECTURE}_relwithdebinfo",
+      "inherits": "build-base",
+      "configurePreset": "clang_#{ARCHITECTURE}_relwithdebinfo",
+      "displayName": "Build clang_#{ARCHITECTURE}_relwithdebinfo"
+    },
+    {
+      "name": "build-clang_#{ARCHITECTURE}_release",
+      "inherits": "build-base",
+      "configurePreset": "clang_#{ARCHITECTURE}_release",
+      "displayName": "Build clang_#{ARCHITECTURE}_release"
+    },
+    {
+      "name": "build-clang_#{ARCHITECTURE}_minsizerel",
+      "inherits": "build-base",
+      "configurePreset": "clang_#{ARCHITECTURE}_minsizerel",
+      "displayName": "Build clang_#{ARCHITECTURE}_minsizerel"
+    },
+    {
+      "name": "build-gcc_#{ARCHITECTURE}_debug",
+      "inherits": "build-base",
+      "configurePreset": "gcc_#{ARCHITECTURE}_debug",
+      "displayName": "Build gcc_#{ARCHITECTURE}_debug"
+    },
+    {
+      "name": "build-gcc_#{ARCHITECTURE}_relwithdebinfo",
+      "inherits": "build-base",
+      "configurePreset": "gcc_#{ARCHITECTURE}_relwithdebinfo",
+      "displayName": "Build gcc_#{ARCHITECTURE}_relwithdebinfo"
+    },
+    {
+      "name": "build-gcc_#{ARCHITECTURE}_release",
+      "inherits": "build-base",
+      "configurePreset": "gcc_#{ARCHITECTURE}_release",
+      "displayName": "Build gcc_#{ARCHITECTURE}_release"
+    },
+    {
+      "name": "build-gcc_#{ARCHITECTURE}_minsizerel",
+      "inherits": "build-base",
+      "configurePreset": "gcc_#{ARCHITECTURE}_minsizerel",
+      "displayName": "Build gcc_#{ARCHITECTURE}_minsizerel"
+    },
+    {
+      "name": "build-clang-cl_#{ARCHITECTURE}_debug",
+      "inherits": "build-base",
+      "configurePreset": "clang-cl_#{ARCHITECTURE}_debug",
+      "displayName": "Build clang-cl_#{ARCHITECTURE}_debug"
+    },
+    {
+      "name": "build-clang-cl_#{ARCHITECTURE}_relwithdebinfo",
+      "inherits": "build-base",
+      "configurePreset": "clang-cl_#{ARCHITECTURE}_relwithdebinfo",
+      "displayName": "Build clang-cl_#{ARCHITECTURE}_relwithdebinfo"
+    },
+    {
+      "name": "build-clang-cl_#{ARCHITECTURE}_release",
+      "inherits": "build-base",
+      "configurePreset": "clang-cl_#{ARCHITECTURE}_release",
+      "displayName": "Build clang-cl_#{ARCHITECTURE}_release"
+    },
+    {
+      "name": "build-clang-cl_#{ARCHITECTURE}_minsizerel",
+      "inherits": "build-base",
+      "configurePreset": "clang-cl_#{ARCHITECTURE}_minsizerel",
+      "displayName": "Build clang-cl_#{ARCHITECTURE}_minsizerel"
+    }
+  ]
+}

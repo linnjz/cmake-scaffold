@@ -1,0 +1,50 @@
+[project]
+name = "MyApp"
+version = "1.0.0"
+description = ""
+homepage_url = ""
+languages = ["C","CXX"]
+c_standard = 23
+cxx_standard = 23
+# 1. type: fixed, size: 0 <= size <= cpu.actual.max_size
+# 2. type: factor, size: 0.0 <= size <= 1.0
+# 3. size = 0 (fixed) or 0.0 (factor) means all CPU threads (cpu.actual.max_size), not 0
+# Watch out for floating-point multiplication truncation
+# Python automatic range correction
+jobs = { type = "fixed", size = 0 }
+
+[[project.sub]]
+name = ""
+version = "1.0.0"
+description = ""
+target_type = "EXE" # EXE | STATIC | SHARED 
+win32_executable = false
+macos_bundle = false
+
+
+[presets]
+binary_dir = "${sourceDir}/out/build/${presetName}"
+architecture = "x64"               # "x64", "x86", "amd", "amd64"
+generator = "Ninja"                # See https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html               
+msvc_runtime_mode = "MD"           # "MD", "MT"
+msvc_toolset = "v145"              # See https://cmake.com.cn/cmake/help/latest/variable/MSVC_VERSION.html#variable:MSVC_VERSION
+use_sanitizers = false
+
+[presets.user]
+install_dir = "${sourceDir}/out/install/${presetGroup}"
+compilers = ["clang-cl", "msvc"]            # "msvc", "clang", "gcc", "clang-cl"
+build_types = ["Debug", "Release"]  # ["Debug", "RelWithDebInfo", "Release", "MinSizeRel"]
+
+[qt]
+qt_enabled = false
+sdk_dir = "E:/Qt/6.6.2/msvc2019_64"
+components = ["Widgets"]
+
+[code_runner]
+enabled = true
+# Single-file mode: "cmake" = build whole project, "direct" = quick compile+run
+cpp_mode = "cmake"
+run_in_terminal = true
+clear_previous_output = true
+# 多编译器时指定用哪个预设，空则自动取 compilers[0]
+# default_preset = "build-clang-cl_x64_Debug"

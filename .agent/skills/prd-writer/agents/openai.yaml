@@ -1,0 +1,4 @@
+interface:
+  display_name: "PRD Writer"
+  short_description: "通过对话澄清产品需求并生成可落地的标准 PRD 文档"
+  default_prompt: "Use $prd-writer to turn my product idea into a clear, implementation-ready PRD."

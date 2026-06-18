@@ -1,0 +1,62 @@
+﻿# Docs: https://clang.llvm.org/extra/clang-tidy/checks/list.html
+ExtraArgs: [-std=c++23]
+
+Checks: '-*,
+  bugprone-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-do-while,
+  -cppcoreguidelines-avoid-goto,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-use-enum-class,
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  -misc-static-initialization-cycle,
+  modernize-*,
+  -modernize-avoid-c-arrays,
+  -modernize-loop-convert,
+  -modernize-use-auto,
+  -modernize-make-shared,
+  -modernize-make-unique,
+  -modernize-use-scoped-lock,
+  -modernize-use-emplace,
+  -modernize-pass-by-value,
+  -modernize-use-trailing-return-type,
+  -modernize-use-ranges,
+  -modernize-use-string-view,
+  -modernize-concat-nested-namespaces,
+  -modernize-raw-string-literal,
+  -modernize-avoid-c-style-cast,
+  performance-*,
+  readability-*,
+  -readability-braces-around-statements,
+  -readability-container-contains,
+  -readability-magic-numbers,
+  -readability-function-cognitive-complexity,
+  -readability-function-size,
+  -readability-identifier-length,
+  -readability-identifier-naming,
+  -readability-implicit-bool-conversion'
+
+CheckOptions:
+  bugprone-argument-comment.IgnoreSingleArgument: true
+  bugprone-argument-comment.CommentIntegerLiterals: true
+  bugprone-argument-comment.CommentBoolLiterals: true
+  bugprone-argument-comment.CommentNullPtrs: true
+  bugprone-argument-comment.CommentFloatLiterals: true
+  bugprone-capturing-this-in-member-variable.FunctionWrapperTypes: '::std::function;::std::move_only_function;::boost::function;::absl::AnyInvocable;::folly::Function'
+  bugprone-easily-swappable-parameters.MinimumLength: 3
+  bugprone-easily-swappable-parameters.IgnoredParameterNames: '"";iterator;begin;end;first;last;lhs;rhs;index;idx;size;count;len;length;x;y;z;w;h;width;height'
+  bugprone-easily-swappable-parameters.IgnoredParameterTypeSuffixes: 'bool;Ptr;Handle;Id;Index;Count;Size;Length;Flags;Flag;Mask;Callback;Fn;T;Type;Key;Name;Path;Str;String;View;It;Iterator;InputIt;ForwardIt;RandomIt'
+  bugprone-empty-catch.IgnoreCatchWithKeywords: '@TODO;@FIXME;IGNORE;INTENTIONAL;WONTFIX'
+  bugprone-exception-escape.FunctionsThatShouldNotThrow: 'WinMain,AtExitHandler,SignalHandler'
+  bugprone-misplaced-widening-cast.CheckImplicitCasts: true
+  bugprone-narrowing-conversions.WarnOnEquivalentBitWidth: false
+  bugprone-narrowing-conversions.IgnoreConversionFromTypes: 'size_t;ptrdiff_t;size_type;difference_type'
+  bugprone-signed-char-misuse.CharTypedefsToIgnore: 'int8_t;uint8_t;sal_Int8;BYTE'

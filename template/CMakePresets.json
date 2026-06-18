@@ -1,0 +1,160 @@
+{
+  "version": 9,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 30,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "displayName": "Base Configuration",
+      "generator": "#{GENERATOR}",
+      "binaryDir": "#{BINARY_DIR}",
+      "cacheVariables": {
+        "CMAKE_C_STANDARD": "23",
+        "CMAKE_C_STANDARD_REQUIRED": "ON",
+        "CMAKE_C_EXTENSIONS": "OFF",
+        "CMAKE_CXX_STANDARD": "23",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "ON",
+        "USE_SANITIZERS": "OFF"
+      },
+      "environment": {
+        "INCLUDE": "$penv{INCLUDE}",
+        "LIB": "$penv{LIB}",
+        "PATH": "$penv{PATH}"
+      },
+      "architecture": {
+        "value": "#{ARCHITECTURE}",
+        "strategy": "external"
+      }
+    },
+    {
+      "name": "qt-base",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "QT_SUPPORT": "ON",
+        "CMAKE_PREFIX_PATH": "$env{QTDIR}"
+      },
+      "vendor": {
+        "qt-project.org/Qt": {
+          "description": "Qt SDK is supplied by CMakeUserPresets.json"
+        }
+      }
+    },
+    {
+      "name": "non-qt-base",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "QT_SUPPORT": "OFF"
+      }
+    },
+    {
+      "name": "msvc-base",
+      "hidden": true,
+      "inherits": "base",
+      "displayName": "Base Configuration for msvc",
+      "description": "Base preset for msvc",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "MSVC_RUNTIME_MODE": "#{MSVC_RUNTIME_MODE}"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "toolset": {
+        "value": "#{MSVC_TOOLSET}",
+        "strategy": "external"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "intelliSenseMode": "windows-msvc-#{ARCHITECTURE}"
+        }
+      }
+    },
+    {
+      "name": "clang-cl-base",
+      "hidden": true,
+      "inherits": "base",
+      "displayName": "Base Configuration for clang-cl",
+      "description": "Base preset for clang-cl",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl.exe",
+        "CMAKE_CXX_COMPILER": "clang-cl.exe",
+        "MSVC_RUNTIME_MODE": "#{MSVC_RUNTIME_MODE}"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "toolset": {
+        "value": "ClangCL",
+        "strategy": "external"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "intelliSenseMode": "windows-clangcl-#{ARCHITECTURE}"
+        }
+      }
+    },
+    {
+      "name": "clang-base",
+      "hidden": true,
+      "inherits": "base",
+      "displayName": "Base Configuration for clang",
+      "description": "Base preset for clang",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "intelliSenseMode": "windows-clang-#{ARCHITECTURE}"
+        }
+      }
+    },
+    {
+      "name": "gcc-base",
+      "hidden": true,
+      "inherits": "base",
+      "displayName": "Base Configuration for gcc",
+      "description": "Base preset for gcc",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "intelliSenseMode": "linux-gcc-#{ARCHITECTURE}"
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-base",
+      "hidden": true,
+      "jobs": #{JOBS}
+    }
+  ]
+}

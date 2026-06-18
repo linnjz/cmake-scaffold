@@ -1,0 +1,1043 @@
+{
+  // ==================== 1. 编辑器外观 (Editor Appearance) ====================
+  "editor.colorDecorators": true, // 显示颜色装饰器（如颜色预览）
+  "editor.fontFamily": "JetBrains Mono NL Light", // 字体
+  "editor.fontSize": 18, // 字号
+  "editor.fontLigatures": false, // 关闭连字
+  "editor.glyphMargin": true, // 显示行号左侧的图标边栏
+  "editor.lineNumbers": "on", // 显示行号
+  "editor.minimap.enabled": true, // 启用缩略图
+  "editor.minimap.renderCharacters": true, // 缩略图中渲染实际字符
+  "workbench.preferredDarkColorTheme": "Visual Studio Light", // 工作台主题
+  "workbench.iconTheme": "vscode-jetbrains-icon-theme-2023-light",
+  "workbench.colorTheme": "JetBrains Rider New UI Lighter",
+  "workbench.editor.useModal": "off",
+  "workbench.experimental.modernUI": true,
+  // ==================== 2. 编辑器交互 (Editor Interaction) ====================
+  "editor.autoClosingBrackets": "always", // 自动闭合括号
+  "editor.cursorBlinking": "smooth", // 光标闪烁样式
+  "editor.foldOnOpen": false, // 打开文件时不自动折叠
+  "editor.folding.enabled": true, // 启用代码折叠
+  "editor.foldingStrategy": "indentation", // 基于缩进折叠
+  "editor.guides.bracketPairs": true, // 括号对参考线
+  "editor.matchBrackets": "always", // 高亮匹配括号
+  "editor.mouseWheelZoom": true, // Ctrl+滚轮缩放字体
+  "editor.scrollBeyondLastLine": false, // 禁止滚动超过最后一行
+  "editor.showFoldingControls": "always", // 始终显示折叠按钮
+  "editor.suggestOnTriggerCharacters": true, // 触发字符时弹出建议
+  "editor.wordBasedSuggestions": "matchingDocuments", // 基于文档单词提供建议
+  "editor.inlayHints.enabled": "offUnlessPressed",
+  // ==================== 3. 格式化和缩进 (Formatting & Indentation) ====================
+  "editor.detectIndentation": false, // 不自动检测缩进
+  "editor.formatOnPaste": true, // 粘贴时格式化
+  "editor.formatOnSave": true, // 保存时格式化
+  "editor.formatOnType": false, // 输入时不格式化
+  "editor.insertSpaces": true, // 使用空格缩进
+  "editor.tabSize": 2, // 缩进 2 空格
+  "editor.trimAutoWhitespace": false, // 保存时不自动删除行尾空白
+  // ==================== 4. 文件与换行 (Files & Wrapping) ====================
+  "editor.insertFinalNewline": true, // 文件末尾插入空行
+  "editor.wrapText": false, // 文本不换行
+  "files.eol": "\n", // 换行符 LF
+  "files.trimTrailingWhitespace": true,  // 删除尾部空格
+  // ==================== 5. 差异编辑器 (Diff Editor) ====================
+  "diffEditor.codeLens": true, // 差异编辑器中显示代码透镜
+  "diffEditor.renderSideBySide": true, // 差异对比分栏显示
+  // ==================== 6. Git 集成与 GitLens (Git Integration & GitLens) ====================
+  "scm.diffDecorations": "all", // Git 修改标记: all=装订线+滚动条, gutter=仅装订线, overview=仅滚动条, none=关闭
+  "git.diffDecorationsGutterWidth": 3, // 装订线修改标记宽度 (1~5)
+  "git.diffDecorationsGutterVisibility": "always", // 装订线标记显示时机: always/hover/active
+  "git.decorations.enabled": true, // 文件树显示 M/U/A 标记
+  "gitlens.ai.model": "gitkraken",
+  "gitlens.ai.gitkraken.model": "gemini:gemini-2.5-flash",
+  "gitlens.hovers.currentLine.over": "line",
+  "workbench.colorCustomizations": {
+    // Gutter indicators (left)
+    "editorGutter.modifiedBackground": "#00c3ff",
+    "editorGutter.addedBackground": "#e6ff05",
+    "editorGutter.deletedBackground": "#ff0af3",
+    // Scrollbar indicators (right)
+    "editorOverviewRuler.addedForeground": "#ff5100",
+    "editorOverviewRuler.modifiedForeground": "#003cff",
+    "editorOverviewRuler.deletedForeground": "#ff0505"
+  },
+  // ==================== 7. C++ 语义着色 (Semantic Token Colors) ====================
+  "editor.semanticHighlighting.enabled": false, // 语义高亮
+  "editor.semanticTokenColorCustomizations": {
+    "rules": {
+      "templateType:cpp": {
+        "foreground": "#1781B5"
+      },
+      "enumMember:cpp": {
+        "foreground": "#000000"
+      },
+      "function:cpp": {
+        "foreground": "#8E44AD"
+      },
+      "templateFunction:cpp": {
+        "foreground": "#8E44AD"
+      },
+      "genericType:cpp": {
+        "foreground": "#1781B5"
+      },
+      "macro:cpp": {
+        "foreground": "#8A1BFF"
+      },
+      "method:cpp": {
+        "foreground": "#8E44AD"
+      },
+      "type:cpp": {
+        "foreground": "#1781B5"
+      },
+      "valueType:cpp": {
+        "foreground": "#1781B5"
+      },
+      "type.deduced:cpp": {
+        "foreground": "#0000EE"
+      },
+      "type.builtin:cpp": {
+        "foreground": "#0000EE"
+      },
+      "variable.global:cpp": {
+        "foreground": "#000000"
+      },
+      "variable.local:cpp": {
+        "foreground": "#000000"
+      },
+      "variable.readonly:cpp": {
+        "foreground": "#000000"
+      }
+      /*
+      "event:cpp": {
+        "foreground": "#000000"
+      },
+      "label:cpp": {
+        "foreground": "#000000"
+      },
+      "property:cpp": {
+        "foreground": "#000000"
+      },
+      "namespace:cpp": {
+        "foreground": "#000000"
+      },
+      "newOperator:cpp": {
+        "foreground": "#000000"
+      },
+      "operatorOverload:cpp": {
+        "foreground": "#000000"
+      },
+      "memberOperatorOverload:cpp": {
+        "foreground": "#000000"
+      },
+      "parameter:cpp": {
+        "foreground": "#000000"
+      },
+      "cliProperty:cpp": {
+        "foreground": "#000000"
+      },
+      "referenceType:cpp": {
+        "foreground": "#000000"
+      },
+      "property.static:cpp": {
+        "foreground": "#000000"
+      },
+      "method.static:cpp": {
+        "foreground": "#000000"
+      },
+      "numberLiteral:cpp": {
+        "foreground": "#000000"
+      },
+      "customLiteral:cpp": {
+        "foreground": "#000000"
+      },
+      "stringLiteral:cpp": {
+        "foreground": "#000000"
+      }*/
+    }
+  },
+  // ==================== 8. TextMate 语法着色 (Token Color Customizations) ====================
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      // 1. 预处理器指令 (Preprocessor Directives)
+      {
+        "scope": [
+          "keyword.control.directive.conditional.if.cpp",
+          "keyword.control.directive.conditional.ifdef.cpp",
+          "keyword.control.directive.conditional.ifndef.cpp",
+          "keyword.control.directive.conditional.defined.cpp",
+          "keyword.control.directive.conditional.elif.cpp",
+          "keyword.control.directive.elif.cpp",
+          "keyword.control.directive.elifdef.cpp",
+          "keyword.control.directive.elifndef.cpp",
+          "keyword.control.directive.else.cpp",
+          "keyword.control.directive.endif.cpp",
+          "keyword.control.directive.define.cpp",
+          "keyword.control.directive.undef.cpp",
+          "keyword.control.directive.include.cpp",
+          "keyword.control.directive.diagnostic.error.cpp",
+          "keyword.control.directive.diagnostic.warning.cpp",
+          "keyword.control.directive.line.cpp",
+          "keyword.control.directive.pragma.cpp",
+          "entity.other.attribute-name.pragma.preprocessor.cpp"
+        ],
+        "settings": {
+          "foreground": "#808080",
+        }
+      },
+      /*// _Pragma 操作符
+      {
+        "scope": "entity.other.attribute-name.pragma.preprocessor.cpp",
+        "settings": {
+          "foreground": "#0000EE"
+        }
+      },*/
+      // 2. 宏定义 (Macros)
+      {
+        "scope": [
+          "entity.name.function.preprocessor.cpp",
+          "entity.name.other.preprocessor.macro.predefined.NDEBUG.cpp",
+          "entity.name.other.preprocessor.macro.predefined.__cplusplus.cpp",
+          "entity.name.other.preprocessor.macro.predefined._WIN64.cpp",
+          "entity.name.other.preprocessor.macro.predefined.probably.APPLE.cpp",
+          "entity.name.other.preprocessor.macro.predefined.probably.OHOS.cpp",
+          "entity.name.other.preprocessor.macro.predefined.probably.ANDROID.cpp",
+          "entity.name.other.preprocessor.macro.predefined.probably.ORBIS.cpp",
+          "entity.name.other.preprocessor.macro.predefined._MSC_VER.cpp",
+          "entity.name.other.preprocessor.macro.predefined.__clang__.cpp",
+          "entity.name.other.preprocessor.macro.predefined.__GNUC__.cpp",
+          "entity.name.other.preprocessor.macro.predefined._M_ARM.cpp",
+          "entity.name.other.preprocessor.macro.predefined._M_IX86.cpp",
+          "entity.name.other.preprocessor.macro.predefined._M_X64.cpp",
+          "entity.name.other.preprocessor.macro.predefined.__LINE__.cpp"
+        ],
+        "settings": {
+          "foreground": "#8A1BFF"
+        }
+      },
+      {
+        "scope": [
+          "entity.name.other.preprocessor.macro.predefined.__has_cpp_attribute.cpp",
+          "entity.name.other.preprocessor.macro.predefined.__has_include.cpp",
+        ],
+        "settings": {
+          "foreground": "#0000EE"
+        }
+      },
+      // 3. 头文件包含 (Header Includes)
+      {
+        "scope": [
+          "string.quoted.other.lt-gt.include.cpp",
+          "string.quoted.double.include.cpp"
+        ],
+        "settings": {
+          "foreground": "#A31515"
+        }
+      },
+      // 4. 字面量与数值常量 (Literals & Numeric Constants)
+      {
+        // 数值
+        "scope": [
+          "constant.numeric.binary.cpp",
+          "constant.numeric.decimal.cpp",
+          "constant.numeric.decimal.point.cpp",
+          "constant.numeric.exponent.decimal.cpp",
+          "constant.numeric.hexadecimal.cpp",
+          "keyword.operator.minus.exponent.decimal.cpp",
+          "keyword.other.suffix.literal.built-in.floating-point.cpp",
+          "keyword.other.suffix.literal.built-in.integer.cpp",
+          "keyword.other.suffix.literal.user-defined.integer.cpp",
+          "keyword.other.unit.binary.cpp",
+          "keyword.other.unit.exponent.decimal.cpp",
+          "keyword.other.unit.hexadecimal.cpp",
+          "keyword.other.unit.suffix.floating-point.cpp",
+          "keyword.other.unit.suffix.integer.cpp",
+          "keyword.other.unit.user-defined.cpp",
+          "punctuation.separator.constant.numeric.cpp"
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      // 转义字符
+      {
+        "scope": [
+          "constant.character.escape.cpp",
+        ],
+        "settings": {
+          "foreground": "#FB8B05",
+        }
+      },
+      // 字符串+字面量
+      {
+        "scope": [
+          "keyword.other.suffix.literal.user-defined.reserved.string.cpp",
+          "keyword.other.suffix.literal.user-defined.string.cpp",
+          "meta.encoding.cpp",
+          "punctuation.definition.string.begin.cpp",
+          "punctuation.definition.string.end.cpp",
+          "string.quoted.double.cpp",
+          "string.quoted.double.raw.$2",
+          "string.quoted.double.raw.cpp",
+          "string.quoted.single.cpp"
+        ],
+        "settings": {
+          "foreground": "#A7005A",
+        }
+      },
+      // 5. 注释 (Comments)
+      {
+        "scope": [
+          "punctuation.definition.comment.begin.cpp",
+          "punctuation.definition.comment.end.cpp",
+          "punctuation.definition.comment.cpp",
+          "comment.line.double-slash.cpp",
+          "comment.block.documentation.cpp",
+          "comment.line.double-slash.documentation.cpp",
+          "markup.bold.doxygen.cpp",
+          "markup.italic.doxygen.cpp"
+        ],
+        "settings": {
+          "foreground": "#229453",
+        }
+      },
+      // 6. 类型 (Types)
+      {
+        // 关键字
+        "scope": [
+          "entity.name.namespace.cpp",
+          "entity.name.type.class.cpp",
+          "entity.name.type.enum.cpp",
+          "entity.name.type.struct.cpp",
+          "entity.name.type.template.cpp",
+          "entity.name.type.union.cpp",
+          "storage.type.built-in.cpp",
+          "support.type.built-in.posix-reserved.cpp"
+        ],
+        "settings": {
+          "foreground": "#1781B5"
+        }
+      },
+      {
+        // 基础类型
+        "scope": [
+          "storage.type.built-in.primitive.cpp"
+        ],
+        "settings": {
+          "foreground": "#0000EE"
+        }
+      },
+      {
+        // 自定义类型/别名
+        "scope": [
+          "entity.name.scope-resolution.function.call.cpp",
+          "entity.name.scope-resolution.function.definition.cpp",
+          "entity.name.type.cpp",
+          "entity.name.type.alias.cpp",
+          "storage.type.template.argument"
+        ],
+        "settings": {
+          "foreground": "#1781B5"
+        }
+      },
+      {
+        // 后置返回类型
+        "scope": [
+          "storage.type.return-type.lambda.cpp",
+          "punctuation.definition.function.return-type.cpp",
+          "punctuation.definition.lambda.return-type.cpp",
+        ],
+        "settings": {
+          "foreground": "#1781B5"
+        }
+      },
+      // 7. 控制流关键字 (Control Flow Keywords)
+      {
+        "scope": [
+          "entity.name.label.cpp",
+          "entity.name.label.call.cpp",
+          "keyword.control.break.cpp",
+          "keyword.control.case.cpp",
+          "keyword.control.catch.cpp",
+          "keyword.control.co_await.cpp",
+          "keyword.control.co_return.cpp",
+          "keyword.control.co_yield.cpp",
+          "keyword.control.continue.cpp",
+          "keyword.control.default.cpp",
+          "keyword.control.do.cpp",
+          "keyword.control.else.cpp",
+          "keyword.control.for.cpp",
+          "keyword.control.goto.cpp",
+          "keyword.control.if.cpp",
+          "keyword.control.return.cpp",
+          "keyword.control.switch.cpp",
+          "keyword.control.throw.cpp",
+          "keyword.control.try.cpp",
+          "keyword.control.while.cpp"
+        ],
+        "settings": {
+          "foreground": "#A0522D",
+        }
+      },
+      // 8. 关键字-存储类与修饰符关键字 (Storage & Modifier Keywords)
+      {
+        "scope": [
+          "constant.language.false.cpp",
+          "constant.language.nullptr.cpp",
+          "constant.language.true.cpp",
+          "keyword.control.directive.import.cpp",
+          "keyword.operator.alignas.cpp",
+          "keyword.operator.alignof.cpp",
+          "keyword.operator.and.cpp",
+          "keyword.operator.and_eq.cpp",
+          "keyword.operator.bitand.cpp",
+          "keyword.operator.bitor.cpp",
+          "keyword.operator.cast.const_cast.cpp",
+          "keyword.operator.cast.dynamic_cast.cpp",
+          "keyword.operator.cast.reinterpret_cast.cpp",
+          "keyword.operator.cast.static_cast.cpp",
+          "keyword.operator.compl.cpp",
+          "keyword.operator.delete.cpp",
+          "keyword.operator.delete.array.cpp",
+          "keyword.operator.new.cpp",
+          "keyword.operator.noexcept.cpp",
+          "keyword.operator.not.cpp",
+          "keyword.operator.not_eq.cpp",
+          "keyword.operator.or.cpp",
+          "keyword.operator.or_eq.cpp",
+          "keyword.operator.sizeof.cpp",
+          "keyword.operator.typeid.cpp",
+          "keyword.operator.xor.cpp",
+          "keyword.operator.xor_eq.cpp",
+          "keyword.other.concept.cpp",
+          "keyword.other.constinit.cpp",
+          "keyword.other.decltype.cpp",
+          "keyword.other.default.constructor.cpp",
+          "keyword.other.default.function.cpp",
+          "keyword.other.delete.constructor.cpp",
+          "keyword.other.delete.function.cpp",
+          "keyword.other.export.cpp",
+          "keyword.other.module.cpp",
+          "keyword.other.namespace.definition.cpp",
+          "keyword.other.requires.cpp",
+          "keyword.other.typedef.cpp",
+          "keyword.other.typename.cpp",
+          "keyword.other.static-assert.cpp",
+          "keyword.other.using.directive.cpp",
+          "meta.arguments.operator.noexcept",
+          "meta.preprocessor.import.cpp",
+          "storage.modifier.consteval.cpp",
+          "storage.modifier.constexpr.cpp",
+          "storage.modifier.inline.cpp",
+          "storage.modifier.specifier.const.cpp",
+          "storage.modifier.specifier.extern.cpp",
+          "storage.modifier.specifier.functional.post-parameters.final.cpp",
+          "storage.modifier.specifier.functional.post-parameters.noexcept.cpp",
+          "storage.modifier.specifier.functional.post-parameters.override.cpp",
+		  "storage.modifier.specifier.functional.post-parameters.const.cpp",
+          "storage.modifier.specifier.functional.pre-parameters.explicit.cpp",
+          "storage.modifier.specifier.functional.pre-parameters.friend.cpp",
+		  "storage.modifier.specifier.functional.pre-parameters.inline.cpp",
+          "storage.modifier.specifier.functional.pre-parameters.mutable.cpp",
+          "storage.modifier.specifier.functional.pre-parameters.virtual.cpp",
+          "storage.modifier.specifier.functional.pre-parameters.constexpr.cpp",
+          "storage.modifier.specifier.register.cpp",
+          "storage.modifier.specifier.static.cpp",
+          "storage.modifier.specifier.thread_local.cpp",
+          "storage.modifier.specifier.volatile.cpp",
+          "storage.type.asm.cpp",
+          "storage.type.class.cpp",
+          "storage.type.decltype.cpp",
+          "storage.type.enum.cpp",
+          "storage.type.enum.enum-key.class.cpp",
+          "storage.type.extern.cpp",
+          "storage.type.modifier.access.control.private.cpp",
+          "storage.type.modifier.access.control.protected.cpp",
+          "storage.type.modifier.access.control.public.cpp",
+          "storage.modifier.cpp",
+          /*"storage.type.modifier.access.public.cpp",
+          "storage.type.modifier.access.private.cpp",
+          "storage.type.modifier.access.protected.cpp",*/
+          "storage.type.modifier.final.cpp",
+          "storage.type.namespace.definition.cpp",
+          "storage.type.struct.cpp",
+          "storage.type.struct.declare.cpp",
+          "storage.type.template.cpp",
+          "storage.type.template.argument.class.cpp",
+          "storage.type.template.argument.typename.cpp",
+          "storage.type.union.cpp",
+          "variable.language.this.cpp",
+          "variable.other.unknown.import.cpp",
+          "variable.other.object.access.noexcept.cpp",
+          "variable.other.unknown.using.cpp",
+          "variable.other.unknown.class.cpp",
+          "variable.other.unknown.template.cpp",
+          "variable.other.unknown.typename.cpp",
+          "variable.other.unknown.struct.cpp",
+          "variable.other.unknown.union.cpp",
+		  "variable.other.unknown.requires.cpp",
+		  "storage.type.namespace.directive.cpp",
+        ],
+        "settings": {
+          "foreground": "#0000EE"
+        }
+      },
+      // 9. 函数 (Functions & Operators)
+      {
+        // 声明定义
+        "scope": [
+          "entity.name.function.definition.cpp",
+        ],
+        "settings": {
+          "foreground": "#8E44AD",
+        }
+      },
+      {
+        // 调用
+        "scope": [
+          "entity.name.function.call.cpp",
+        ],
+        "settings": {
+          "foreground": "#8E44AD"
+        }
+      },
+      {
+        // 成员函数
+        "scope": [
+          "entity.name.function.member.cpp",
+        ],
+        "settings": {
+          "foreground": "#8E44AD"
+        }
+      },
+      {
+        // 构造析构
+        "scope": [
+          "entity.name.function.definition.special.constructor.cpp",
+          "entity.name.function.definition.special.member.destructor.cpp",
+          "entity.name.function.constructor.cpp",
+          "entity.name.function.destructor.cpp"
+        ],
+        "settings": {
+          "foreground": "#1781B5",
+        }
+      },
+      {
+        // operator
+        "scope": [
+          "entity.name.operator.cpp",
+          "entity.name.operator.custom-literal.cpp",
+          "entity.name.operator.type.cpp",
+          "keyword.other.operator.overload.cpp"
+        ],
+        "settings": {
+          "foreground": "#8E44AD"
+        }
+      },
+      // 10. 运算逻辑 (Operation & Logic)
+      {
+        "scope": [
+          "keyword.operator.arithmetic.cpp",
+          "keyword.operator.assignment.cpp",
+          "keyword.operator.assignment.compound.cpp",
+          "keyword.operator.bitwise.cpp",
+          "keyword.operator.bitwise.shift.cpp",
+          "keyword.operator.comparison.cpp",
+          "keyword.operator.decrement.cpp",
+          "keyword.operator.increment.cpp",
+          "keyword.operator.logical.cpp",
+          "keyword.operator.ternary.cpp"
+        ],
+        "settings": {
+          "foreground": "#8E44AD"
+        }
+      },
+      // 11. 变量与参数 (Variables & Parameters)
+      {
+        // 枚举值
+        "scope": [
+          "variable.other.enummember.cpp",
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      {
+        // 函数参数
+        "scope": [
+          "variable.parameter.cpp",
+          "variable.parameter.preprocessor.cpp"
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      {
+        // 局部变量
+        "scope": [
+          "variable.other.declare.cpp",
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      {
+        // 成员变量
+        "scope": [
+          "variable.other.property.cpp",
+          "variable.other.object.property.cpp",
+          "entity.name.function.call.initializer.cpp",
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      // 12. 指针、引用与函数指针 (Pointers, References & Function Pointers)
+      {
+        "scope": [
+          "entity.name.type.pointer.function.cpp",
+          "punctuation.definition.function.pointer.dereference.cpp"
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      {
+        "scope": [
+          "storage.modifier.pointer.cpp",
+          "storage.modifier.reference.cpp"
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      // 13. 标点符号 - 访问、分隔符、冒号和作用域 (Punctuation: Access, Delimiters, Colon, Scope)
+      {
+        // .和->
+        "scope": [
+          "punctuation.separator.dot-access.cpp",
+          "punctuation.separator.pointer-access.cpp",
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      {
+        // ::作用域前的命名空间
+        "scope": "entity.name.scope-resolution.cpp",
+        "settings": {
+          "foreground": "#1781B5"
+        }
+      },
+      {
+        // ::
+        "scope": [
+          "punctuation.separator.namespace.access.cpp",
+          "punctuation.separator.scope-resolution.cpp",
+        ],
+        "settings": {
+          "foreground": "#1781B5"
+        }
+      },
+      {
+        // ,和;
+        "scope": [
+          "punctuation.separator.delimiter.comma.cpp",
+          "punctuation.terminator.statement.cpp",
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      {
+        // :
+        "scope": [
+          "punctuation.separator.colon.access.control.cpp",
+          "punctuation.separator.colon.inheritance.cpp",
+          "punctuation.separator.colon.range-based.cpp"
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      // 14. 模板、Lambda、属性与大括号 (Templates, Lambdas, Attributes, Braces)
+      {
+        // 模板<>
+        "scope": [
+          "punctuation.section.angle-brackets.begin.template.call.cpp",
+          "punctuation.section.angle-brackets.begin.template.definition.cpp",
+          "punctuation.section.angle-brackets.end.template.call.cpp",
+          "punctuation.section.angle-brackets.end.template.definition.cpp"
+        ],
+        "settings": {
+          "foreground": "#2C5187"
+        }
+      },
+      {
+        // lambda [](){}
+        "scope": [
+          "punctuation.definition.capture.begin.lambda.cpp",
+          "punctuation.definition.capture.end.lambda.cpp",
+          "punctuation.section.block.begin.bracket.curly.lambda.cpp",
+          "punctuation.section.block.end.bracket.curly.lambda.cpp"
+        ],
+        "settings": {
+          "foreground": "#2C5187"
+        }
+      },
+      {
+        // 属性 [[]]
+        "scope": [
+          "entity.other.attribute.$0.cpp",
+          "punctuation.section.attribute.begin.cpp",
+          "punctuation.section.attribute.end.cpp",
+          "support.other.attribute.cpp"
+        ],
+        "settings": {
+          "foreground": "#1781B5"
+        }
+      },
+      {
+        // 初始化 {}
+        "scope": [
+          "punctuation.section.arguments.begin.bracket.curly.initializer.cpp",
+          "punctuation.section.arguments.end.bracket.curly.initializer.cpp",
+        ],
+        "settings": {
+          "foreground": "#2C5187"
+        }
+      },
+      {
+        // 结构化绑定 [...]
+        "scope": [
+          "meta.binding.cpp",
+          "punctuation.definition.begin.bracket.square.binding.cpp",
+          "punctuation.definition.end.bracket.square.binding.cpp",
+        ],
+        "settings": {
+          "foreground": "#000000"
+        }
+      },
+      // 15. 汇编与杂项 (Assembly & Miscellaneous)
+      {
+        // 汇编
+        "scope": [
+          "meta.embedded.assembly",
+          "meta.asm.cpp",
+        ],
+        "settings": {
+          "foreground": "#0000EE"
+        }
+      },
+      {
+        //行继续转义
+        "scope": [
+          "constant.character.escape.line-continuation.cpp",
+        ],
+        "settings": {
+          "foreground": "#90A4AE"
+        }
+      },
+      {
+        // 非法语法着色
+        "scope": [
+          "invalid.illegal.unknown-escape.cpp",
+          "invalid.illegal.constant.numeric.cpp"
+        ],
+        "settings": {
+          "foreground": "#C62828",
+        }
+      },
+    ]
+  },
+  // ==================== 9. clangd ====================
+  "clangd.arguments": [
+    "--header-insertion=never",
+    "--background-index",
+    "--pch-storage=memory",
+    "--limit-results=50",
+    "--limit-references=1000",
+    "-j=4"
+  ],
+  "clangd.fallbackFlags": [
+    "-std=c++23",
+    "-g",
+    "-lpthread"
+  ], // 无编译数据库时的回退标志
+  "clangd.onConfigChanged": "restart", // 配置文件变更时重启
+  // ==================== 10. LLDB 调试器 ====================
+  "lldb.evaluateForHovers": true, // 悬停显示变量值
+  "lldb.dereferencePointers": true, // 指针显示解引用值
+  "lldb.displayFormat": "auto", // 变量显示格式
+  "lldb.suppressMissingSourceFiles": true, // 隐藏缺失源文件提示
+  "lldb.commandCompletions": true, // 调试控制台命令补全
+  "lldb.consoleMode": "commands", // 控制台默认调试命令模式
+  "lldb.evaluationTimeout": 10, // 表达式求值超时(秒)
+  // ==================== 11. CMake 工具集成 (CMake) ====================
+  "cmake.additionalBuildProblemMatchers": [], // 额外构建问题匹配器
+  "cmake.allowCommentsInPresetsFile": true, // 允许 CMakePresets.json 注释
+  "cmake.buildBeforeRun": true, // 运行前先构建
+  "cmake.clearOutputBeforeBuild": true, // 构建前清输出
+  "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json", // 导出 compile_commands.json
+  "cmake.enabledOutputParsers": [
+    "cmake",
+    "gcc",
+    "msvc"
+  ], // 输出解析器
+  "cmake.modifyLists.addNewSourceFiles": "ask", // 新建文件自动更新 CMakeLists.txt
+  "cmake.modifyLists.removeDeletedSourceFiles": "ask", // 删除文件自动清理 CMakeLists.txt
+  "cmake.parallelJobs": 0, // 并行作业数(0=自动)
+  "cmake.parseBuildDiagnostics": true, // 解析编译器输出
+  "cmake.saveBeforeBuild": true, // 构建前保存文件
+  "cmake.ctest.testExplorerIntegrationEnabled": true, // 测试资源管理器集成
+  // ==================== 12. Code Runner ====================
+  "code-runner.clearPreviousOutput": true, // 每次运行前清空输出
+  "code-runner.fileDirectoryAsCwd": true, // 以文件所在目录为工作目录
+  "code-runner.ignoreSelection": true, // 始终运行整个文件
+  "code-runner.runInTerminal": true, // 在终端运行（支持交互输入）
+  "code-runner.saveAllFilesBeforeRun": true, // 运行前自动保存
+  "code-runner.preserveFocus": false, // 运行后焦点切到终端
+  "code-runner.respectShebang": true, // 尊重 #! 解释器指令
+  // 切换构建模式请使用 CMake 扩展状态栏的预设选择器
+  // Switch build mode via CMake Tools status bar preset selector
+  "code-runner.executorMapByGlob": {
+    "CMakeLists.txt": "cd $workspaceRoot && cmake --build --preset build-clang-cl_x64_Debug"
+  },
+  "code-runner.executorMap": {
+    "cpp": "cd $workspaceRoot && cmake --build --preset build-clang-cl_x64_Debug",
+    "c": "cd $workspaceRoot && cmake --build --preset build-clang-cl_x64_Debug"
+  },
+  // ==================== 13. Doxygen 文档生成 (doxdocgen) ====================
+  // 命令风格
+  "doxdocgen.generic.commandSuggestionAddPrefix": true, // 命令建议加 @ 前缀
+  // 文件头
+  "doxdocgen.file.fileOrder": [
+    "file",
+    "author",
+    "brief",
+    "version",
+    "date",
+    "empty",
+    "copyright",
+    "empty",
+    "custom"
+  ],
+  "doxdocgen.file.copyrightTag": [
+    "@copyright Copyright (c) {year}"
+  ],
+  "doxdocgen.file.versionTag": "@version 0.1",
+  "doxdocgen.file.fileTemplate": "@file {name}",
+  // 作者信息
+  "doxdocgen.generic.authorName": "your name",
+  "doxdocgen.generic.authorEmail": "your@email.com",
+  "doxdocgen.generic.authorTag": "@author {author} ({email})",
+  // 日期
+  "doxdocgen.generic.dateFormat": "YYYY-MM-DD",
+  "doxdocgen.generic.dateTemplate": "@date {date}",
+  // 注释模板
+  "doxdocgen.generic.briefTemplate": "@brief {text}",
+  "doxdocgen.generic.paramTemplate": "@param {param} ",
+  "doxdocgen.generic.returnTemplate": "@return {type} ",
+  "doxdocgen.cpp.tparamTemplate": "@tparam {param} ",
+  // 注释块顺序
+  "doxdocgen.generic.order": [
+    "brief",
+    "empty",
+    "tparam",
+    "param",
+    "return",
+    "custom"
+  ],
+  // C 风格注释
+  "doxdocgen.c.firstLine": "/**",
+  "doxdocgen.c.lastLine": " */",
+  "doxdocgen.c.commentPrefix": " * ",
+  // 智能文本
+  "doxdocgen.generic.boolReturnsTrueFalse": true,
+  "doxdocgen.cpp.ctorText": "Construct a new {name} object",
+  "doxdocgen.cpp.dtorText": "Destroy the {name} object",
+  // ==================== 14. Markdown All in One ====================
+  "markdown.extension.completion.enabled": true, // 路径补全
+  "markdown.extension.showActionButtons": true, // 工具栏按钮
+  "markdown.extension.preview.autoShowPreviewToSide": true, // 自动预览
+  "markdown.extension.tableFormatter.enabled": true, // 表格格式化
+  "markdown.extension.tableFormatter.delimiterRowNoPadding": true, // 表格分隔线填满
+  "markdown.extension.toc.levels": "2..4", // 目录级别范围
+  "markdown.extension.math.enabled": true, // 数学公式
+  "markdown.extension.print.onFileSave": false, // 保存不自动打印
+  // ==================== 15. Markdown Preview Enhanced ====================
+  "markdown-preview-enhanced.automaticallyShowPreviewOfMarkdownBeingEdited": true, // 自动预览
+  "markdown-preview-enhanced.breakOnSingleNewLine": true, // GFM 换行
+  "markdown-preview-enhanced.enablePreviewZenMode": true, // 精简 UI
+  "markdown-preview-enhanced.previewTheme": "github-light.css", // 预览主题
+  "markdown-preview-enhanced.codeBlockTheme": "auto.css", // 代码块主题自动匹配
+  "markdown-preview-enhanced.enableEmojiSyntax": true, // Emoji
+  "markdown-preview-enhanced.enableWikiLinkSyntax": true, // Wiki 链接
+  "markdown-preview-enhanced.enableTagSyntax": true, // Obsidian 标签
+  "markdown-preview-enhanced.enableImageLightbox": true, // 图片灯箱
+  "markdown-preview-enhanced.scrollSync": true, // 同步滚动
+  "markdown-preview-enhanced.liveUpdate": true, // 实时更新预览
+  "markdown-preview-enhanced.mathRenderingOption": "KaTeX", // 数学渲染
+  "markdown-preview-enhanced.hideDefaultVSCodeMarkdownPreviewButtons": true, // 隐藏自带预览按钮
+  // ==================== 16. markdownlint ====================
+  "markdownlint.focusMode": true, // 输入时隐藏附近 lint
+  "markdownlint.run": "onType", // 输入时检查
+  "markdownlint.config": {
+    "MD013": false, // 关闭行长度限制
+    "MD033": false, // 允许内联 HTML
+    "MD024": false, // 允许重复标题
+    "MD046": false // 允许不同代码块风格
+  },
+  // ==================== 17. Color Highlight ====================
+  "color-highlight.enable": true, // 启用颜色高亮
+  "color-highlight.languages": [
+    "*"
+  ], // 所有语言
+  "color-highlight.markerType": "background", // 背景高亮
+  "color-highlight.markRuler": true, // 滚动条上显示颜色
+  "color-highlight.matchWords": true, // 高亮颜色关键词
+  "color-highlight.matchRgbWithNoFunction": true, // 高亮 RGB 无函数写法
+  "color-highlight.matchHslWithNoFunction": true, // 高亮 HSL 无函数写法
+  // ==================== 18. Error Lens ====================
+  "errorLens.enabled": true, // 启用行内错误显示
+  "errorLens.enabledDiagnosticLevels": [
+    "error",
+    "warning",
+    "info",
+    "hint"
+  ], // 显示所有级别
+  "errorLens.messageEnabled": true, // 显示错误消息
+  "errorLens.messageBackgroundMode": "line", // 整行背景高亮
+  "errorLens.gutterIconsEnabled": true, // 行号左侧图标
+  "errorLens.statusBarIconsEnabled": true, // 状态栏错误计数
+  "errorLens.statusBarMessageEnabled": true, // 状态栏错误消息
+  "errorLens.fontWeight": "bold", // 加粗
+  "errorLens.removeLinebreaks": true, // 多行合并为一行
+  "errorLens.onSave": false, // 实时更新
+  "errorLens.followCursor": "allLines", // 所有行显示
+  // ==================== 19. cSpell (拼写检查) ====================
+  "cSpell.autocorrect": true, // 自动修正键入错误
+  "cSpell.fixSpellingWithRenameProvider": true, // 重命名修复拼写
+  "cSpell.showSuggestionsLinkInEditorContextMenu": true, // 右键菜单显示建议
+  "cSpell.diagnosticLevel": "Warning", // 问题面板可见度, Hint, Warning
+  "cSpell.minWordLength": 4, // 检查 n 字母以上
+  "cSpell.customDictionaries": { // 项目词库
+    "project-words": {
+      "name": "project-words",
+      "path": "${workspaceRoot}/.cspell/project-words.txt",
+      "addWords": true,
+      "description": "Project-specific words"
+    }
+  },
+  "cSpell.words": [
+    "3rdparty",
+    "AUTOMOC",
+    "AUTORCC",
+    "AUTOUIC",
+    "bigobj",
+    "BINDIR",
+    "cassert",
+    "ccomplex",
+    "cctype",
+    "cerrno",
+    "cfenv",
+    "cfloat",
+    "cinttypes",
+    "ciso",
+    "clangcl",
+    "climits",
+    "clocale",
+    "cmath",
+    "codecvt",
+    "constexpr",
+    "cppm",
+    "cppwinrt",
+    "csetjmp",
+    "csignal",
+    "cstdarg",
+    "cstdbool",
+    "cstddef",
+    "cstdint",
+    "cstdio",
+    "cstdlib",
+    "cstring",
+    "ctgmath",
+    "cuchar",
+    "cwchar",
+    "cwctype",
+    "DDEBUG",
+    "DEPFILE",
+    "deque",
+    "DNOMINMAX",
+    "DUNICODE",
+    "DWIN32",
+    "endforeach",
+    "fstream",
+    "Hostx64",
+    "INCLUDEDIR",
+    "inplace",
+    "iomanip",
+    "iosfwd",
+    "IPC",
+    "ixx",
+    "JMC",
+    "libc++",
+    "linalg",
+    "mdspan",
+    "minsizerel",
+    "MSVC",
+    "netinet",
+    "nologo",
+    "pch",
+    "PCH",
+    "pdb",
+    "PDB",
+    "qrc",
+    "QTDIR",
+    "rcu",
+    "relwithdebinfo",
+    "sdl",
+    "spanstream",
+    "sstream",
+    "stdexcept",
+    "stdfloat",
+    "STREQUAL",
+    "strstream",
+    "syncstream",
+    "typeindex",
+    "typeinfo",
+    "valarray",
+    "Wbem",
+    "webp",
+    "winrt"
+  ],
+  // ==================== 20. Path Intellisense ====================
+  "path-intellisense.autoSlashAfterDirectory": true, // 目录后自动加斜杠
+  "path-intellisense.ignoreTsConfigBaseUrl": true, // 忽略 tsconfig baseUrl
+  // ==================== 21. Chat & AI ====================
+  "chat.disableAIFeatures": true, // 禁用 AI 功能
+  // ==================== 22.  ====================
+  "search.exclude": {
+    "**/.git": true,
+    "**/tmp": true,
+    "**/temp": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/install": true,
+    "**/out": true,
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/venv": true,
+    "**/.venv": true,
+    "**/env": true,
+    "**/__pycache__": true,
+    "**/.mypy_cache": true,
+    "**/.pytest_cache": true,
+    "**/target": true,
+    "**/.idea": true,
+    "**/*.iml": true,
+    "**/bin": true,
+    "**/obj": true,
+    "**/.vs": true,
+  },
+}
