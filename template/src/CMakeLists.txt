@@ -77,10 +77,15 @@ target_sources(${PROJECT_NAME} PRIVATE
 #     $<$<PLATFORM_ID:Linux>:src/linux_impl.cpp>
 )
 
+# 2.0 示例模块库（modules/math）：默认不接入构建；需要时在根 CMakeLists.txt 加 add_subdirectory(modules) 并取消下一行注释
+#target_link_libraries(${PROJECT_NAME} PRIVATE math)
+
 # 2.1 模块依赖（一个项目只能有一个std module，或许应该提到全局CMakeLists.txt？）
-if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
-    include(../cmake/CxxModules.cmake)
-endif()
+#if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+#    include(../cmake/CxxModules.cmake)
+#endif()
+
+# 2.2 编译器设置
 include(../cmake/TargetCompilerFlags.cmake)
 
 # 3. 包含路径

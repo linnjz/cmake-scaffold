@@ -797,15 +797,6 @@
   "code-runner.saveAllFilesBeforeRun": true, // 运行前自动保存
   "code-runner.preserveFocus": false, // 运行后焦点切到终端
   "code-runner.respectShebang": true, // 尊重 #! 解释器指令
-  // 切换构建模式请使用 CMake 扩展状态栏的预设选择器
-  // Switch build mode via CMake Tools status bar preset selector
-  "code-runner.executorMapByGlob": {
-    "CMakeLists.txt": "cd $workspaceRoot && cmake --build --preset build-clang-cl_x64_Debug"
-  },
-  "code-runner.executorMap": {
-    "cpp": "cd $workspaceRoot && cmake --build --preset build-clang-cl_x64_Debug",
-    "c": "cd $workspaceRoot && cmake --build --preset build-clang-cl_x64_Debug"
-  },
   // ==================== 13. Doxygen 文档生成 (doxdocgen) ====================
   // 命令风格
   "doxdocgen.generic.commandSuggestionAddPrefix": true, // 命令建议加 @ 前缀

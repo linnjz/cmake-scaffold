@@ -250,9 +250,8 @@ else()
         -Wno-unused-local-typedef
     )
 
-    # 模块支持选项（若项目不使用模块接口，设为 PRIVATE；否则需考虑传播）
-    # 这里假设项目不使用模块，故设为 PRIVATE
-    # GCC/Clang Modules Support - disabled as project doesn't use modules
+    # 模块支持选项（PRIVATE：模块接口的 BMI 不跨目标传播，消费方各自扫描）
+    # GCC/Clang Modules Support: 模板自带 modules/math 模块示例，故这些开关是生效的
     if(COMPILER_GCC)
         message(STATUS "Set GCC compiler options")
         set(MODULE_SUPPORT_OPTIONS

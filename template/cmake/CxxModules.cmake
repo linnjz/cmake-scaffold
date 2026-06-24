@@ -68,4 +68,15 @@ if(DEFINED _CXX_STD_MOD_DIR AND DEFINED _CXX_STD_MOD_FILE)
     FILES "${_CXX_STD_MOD_DIR}/${_CXX_STD_MOD_FILE}"
           "${_CXX_STD_MOD_DIR}/${_CXX_STD_COMPAT_FILE}"
   )
+
+  # When the generated sources (such as Qt autogen's mocs_compilation.cpp, code generators, etc.) have the GENERATED property,
+  # CMake will by default turn off module scanning for the whole target to avoid scanning generated files; at this point, import std;
+  # in normal sources will directly throw C2230/C2039. Explicitly re-enable scanning only for non-generated sources, without touching the detection phase.
+  get_target_property(_PROJECT_SOURCES ${PROJECT_NAME} SOURCES)
+  foreach(_SOURCE IN LISTS _PROJECT_SOURCES)
+    get_source_file_property(_IS_GENERATED ${_SOURCE} GENERATED)
+    if(NOT _IS_GENERATED)
+      set_source_files_properties(${_SOURCE} PROPERTIES CXX_SCAN_FOR_MODULES ON)
+    endif()
+  endforeach()
 endif()

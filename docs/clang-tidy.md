@@ -305,7 +305,7 @@ add_custom_target(tidy-fix
 "clang-tidy.compilerArgs": ["-std=c++23"]
 ```
 
-也可通过任务系统配置：
+也可通过任务系统配置（`-p` 必须指向具体预设的构建目录，如 `out/build/msvc_x64_debug`；本项目每个预设一棵构建树）：
 
 ```json
 // .vscode/tasks.json
@@ -317,7 +317,7 @@ add_custom_target(tidy-fix
       "type": "shell",
       "command": "clang-tidy",
       "args": [
-        "-p=${workspaceFolder}/out/build",
+        "-p=${workspaceFolder}/out/build/msvc_x64_debug",
         "-checks=-*,bugprone-*,performance-*",
         "${file}"
       ],

@@ -12,6 +12,9 @@ cxx_standard = 23
 # Watch out for floating-point multiplication truncation
 # Python automatic range correction
 jobs = { type = "fixed", size = 0 }
+# Whether to inject include(CTest) + enable_testing() in the root CMakeLists.txt
+# When false, testPresets are generated as usual, but ctest has no tests to run; you can manually add those two lines to fix it
+test_enabled = false
 
 [[project.sub]]
 name = ""
@@ -21,10 +24,9 @@ target_type = "EXE" # EXE | STATIC | SHARED
 win32_executable = false
 macos_bundle = false
 
-
 [presets]
 binary_dir = "${sourceDir}/out/build/${presetName}"
-architecture = "x64"               # "x64", "x86", "amd", "amd64"
+architecture = "x64"               # "x64", "x86", "arm", "arm64" (also feeds intelliSenseMode)
 generator = "Ninja"                # See https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html               
 msvc_runtime_mode = "MD"           # "MD", "MT"
 msvc_toolset = "v145"              # See https://cmake.com.cn/cmake/help/latest/variable/MSVC_VERSION.html#variable:MSVC_VERSION
@@ -39,12 +41,7 @@ build_types = ["Debug", "Release"]  # ["Debug", "RelWithDebInfo", "Release", "Mi
 qt_enabled = false
 sdk_dir = "E:/Qt/6.6.2/msvc2019_64"
 components = ["Widgets"]
-
-[code_runner]
-enabled = true
-# Single-file mode: "cmake" = build whole project, "direct" = quick compile+run
-cpp_mode = "cmake"
-run_in_terminal = true
-clear_previous_output = true
-# 多编译器时指定用哪个预设，空则自动取 compilers[0]
-# default_preset = "build-clang-cl_x64_Debug"
+# Qt Creator writes these vendor checksums into the presets it manages; they are tied to this Qt
+# install, so Qt Creator will rewrite them after a Qt upgrade. Empty = omit that vendor block.
+presets_checksum = "67SmY24ZeVbebyKD0fGfIzb/bGI="  # root-level vendor "qt-project.org/Presets"
+qt_checksum = "wVa86FgEkvdCTVp1/nxvrkaemJc="       # vendor "qt-project.org/Qt" inside "base"

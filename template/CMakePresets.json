@@ -31,29 +31,7 @@
       "architecture": {
         "value": "#{ARCHITECTURE}",
         "strategy": "external"
-      }
-    },
-    {
-      "name": "qt-base",
-      "hidden": true,
-      "inherits": "base",
-      "cacheVariables": {
-        "QT_SUPPORT": "ON",
-        "CMAKE_PREFIX_PATH": "$env{QTDIR}"
-      },
-      "vendor": {
-        "qt-project.org/Qt": {
-          "description": "Qt SDK is supplied by CMakeUserPresets.json"
-        }
-      }
-    },
-    {
-      "name": "non-qt-base",
-      "hidden": true,
-      "inherits": "base",
-      "cacheVariables": {
-        "QT_SUPPORT": "OFF"
-      }
+      }#{QT_VENDOR_BASE}
     },
     {
       "name": "msvc-base",
@@ -156,5 +134,17 @@
       "hidden": true,
       "jobs": #{JOBS}
     }
-  ]
+  ],
+  "testPresets": [
+    {
+      "name": "test-base",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "jobs": #{JOBS}
+      }
+    }
+  ]#{QT_VENDOR_ROOT}
 }

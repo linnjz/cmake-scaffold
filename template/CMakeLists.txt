@@ -28,6 +28,8 @@ project(#{MAIN_PROJECT_NAME}
     LANGUAGES #{PROJECT_LANGUAGES}
 )
 
+#{TESTING_SETUP}
+
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
@@ -78,4 +80,3 @@ if(QT_SUPPORT)
 		set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.#{MAIN_PROJECT_NAME})
 	endif()
 endif()
-

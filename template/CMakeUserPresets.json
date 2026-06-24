@@ -5,7 +5,6 @@
       "name": "msvc-#{ARCHITECTURE}-local",
       "hidden": true,
       "inherits": [
-        "non-qt-base",
         "msvc-base"
       ],
       "installDir": "#{INSTALL_DIR}"
@@ -66,7 +65,6 @@
       "name": "clang-#{ARCHITECTURE}-local",
       "hidden": true,
       "inherits": [
-        "non-qt-base",
         "clang-base"
       ],
       "installDir": "#{INSTALL_DIR}"
@@ -127,7 +125,6 @@
       "name": "gcc-#{ARCHITECTURE}-local",
       "hidden": true,
       "inherits": [
-        "non-qt-base",
         "gcc-base"
       ],
       "installDir": "#{INSTALL_DIR}"
@@ -188,7 +185,6 @@
       "name": "clang-cl-#{ARCHITECTURE}-local",
       "hidden": true,
       "inherits": [
-        "non-qt-base",
         "clang-cl-base"
       ],
       "installDir": "#{INSTALL_DIR}"
@@ -342,6 +338,104 @@
       "inherits": "build-base",
       "configurePreset": "clang-cl_#{ARCHITECTURE}_minsizerel",
       "displayName": "Build clang-cl_#{ARCHITECTURE}_minsizerel"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "test-msvc_#{ARCHITECTURE}_debug",
+      "inherits": "test-base",
+      "configurePreset": "msvc_#{ARCHITECTURE}_debug",
+      "displayName": "Test msvc_#{ARCHITECTURE}_debug"
+    },
+    {
+      "name": "test-msvc_#{ARCHITECTURE}_relwithdebinfo",
+      "inherits": "test-base",
+      "configurePreset": "msvc_#{ARCHITECTURE}_relwithdebinfo",
+      "displayName": "Test msvc_#{ARCHITECTURE}_relwithdebinfo"
+    },
+    {
+      "name": "test-msvc_#{ARCHITECTURE}_release",
+      "inherits": "test-base",
+      "configurePreset": "msvc_#{ARCHITECTURE}_release",
+      "displayName": "Test msvc_#{ARCHITECTURE}_release"
+    },
+    {
+      "name": "test-msvc_#{ARCHITECTURE}_minsizerel",
+      "inherits": "test-base",
+      "configurePreset": "msvc_#{ARCHITECTURE}_minsizerel",
+      "displayName": "Test msvc_#{ARCHITECTURE}_minsizerel"
+    },
+    {
+      "name": "test-clang_#{ARCHITECTURE}_debug",
+      "inherits": "test-base",
+      "configurePreset": "clang_#{ARCHITECTURE}_debug",
+      "displayName": "Test clang_#{ARCHITECTURE}_debug"
+    },
+    {
+      "name": "test-clang_#{ARCHITECTURE}_relwithdebinfo",
+      "inherits": "test-base",
+      "configurePreset": "clang_#{ARCHITECTURE}_relwithdebinfo",
+      "displayName": "Test clang_#{ARCHITECTURE}_relwithdebinfo"
+    },
+    {
+      "name": "test-clang_#{ARCHITECTURE}_release",
+      "inherits": "test-base",
+      "configurePreset": "clang_#{ARCHITECTURE}_release",
+      "displayName": "Test clang_#{ARCHITECTURE}_release"
+    },
+    {
+      "name": "test-clang_#{ARCHITECTURE}_minsizerel",
+      "inherits": "test-base",
+      "configurePreset": "clang_#{ARCHITECTURE}_minsizerel",
+      "displayName": "Test clang_#{ARCHITECTURE}_minsizerel"
+    },
+    {
+      "name": "test-gcc_#{ARCHITECTURE}_debug",
+      "inherits": "test-base",
+      "configurePreset": "gcc_#{ARCHITECTURE}_debug",
+      "displayName": "Test gcc_#{ARCHITECTURE}_debug"
+    },
+    {
+      "name": "test-gcc_#{ARCHITECTURE}_relwithdebinfo",
+      "inherits": "test-base",
+      "configurePreset": "gcc_#{ARCHITECTURE}_relwithdebinfo",
+      "displayName": "Test gcc_#{ARCHITECTURE}_relwithdebinfo"
+    },
+    {
+      "name": "test-gcc_#{ARCHITECTURE}_release",
+      "inherits": "test-base",
+      "configurePreset": "gcc_#{ARCHITECTURE}_release",
+      "displayName": "Test gcc_#{ARCHITECTURE}_release"
+    },
+    {
+      "name": "test-gcc_#{ARCHITECTURE}_minsizerel",
+      "inherits": "test-base",
+      "configurePreset": "gcc_#{ARCHITECTURE}_minsizerel",
+      "displayName": "Test gcc_#{ARCHITECTURE}_minsizerel"
+    },
+    {
+      "name": "test-clang-cl_#{ARCHITECTURE}_debug",
+      "inherits": "test-base",
+      "configurePreset": "clang-cl_#{ARCHITECTURE}_debug",
+      "displayName": "Test clang-cl_#{ARCHITECTURE}_debug"
+    },
+    {
+      "name": "test-clang-cl_#{ARCHITECTURE}_relwithdebinfo",
+      "inherits": "test-base",
+      "configurePreset": "clang-cl_#{ARCHITECTURE}_relwithdebinfo",
+      "displayName": "Test clang-cl_#{ARCHITECTURE}_relwithdebinfo"
+    },
+    {
+      "name": "test-clang-cl_#{ARCHITECTURE}_release",
+      "inherits": "test-base",
+      "configurePreset": "clang-cl_#{ARCHITECTURE}_release",
+      "displayName": "Test clang-cl_#{ARCHITECTURE}_release"
+    },
+    {
+      "name": "test-clang-cl_#{ARCHITECTURE}_minsizerel",
+      "inherits": "test-base",
+      "configurePreset": "clang-cl_#{ARCHITECTURE}_minsizerel",
+      "displayName": "Test clang-cl_#{ARCHITECTURE}_minsizerel"
     }
   ]
 }

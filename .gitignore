@@ -1,0 +1,14 @@
+# generate.py output dir (name == [project].name in project.toml; regenerated on every run)
+/MyApp/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Editors / OS (repo root only; template/.vs is tracked on purpose)
+/.vs/
+/.idea/
+Thumbs.db
+*.orig
+*.rej
