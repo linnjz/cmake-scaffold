@@ -1,92 +1,48 @@
-﻿cmake_minimum_required(VERSION 3.30)
-
-project(#{SUB_PROJECT_NAME}
+﻿project(#{SUB_PROJECT_NAME}
     VERSION #{SUB_PROJECT_VERSION}
     DESCRIPTION "#{SUB_PROJECT_DESCRIPTION}"
     HOMEPAGE_URL "#{PROJECT_HOMEPAGE_URL}"
     LANGUAGES #{PROJECT_LANGUAGES}
 )
 
-# 1. 文件包含
-# 1.1 新增文件、删除文件、重命名文件、移动文件夹等操作，不会刷新，需要重新生成构建系统。
-# FILE(GLOB Src *.cpp *.h *.hpp *.ixx)
-# FILE(GLOB Module module/*.cpp module/*.h module/*.hpp)
-# FILE(GLOB UI
-#      "UI/App/*.h"
-#      "UI/App/*.cpp"
-#      "UI/MVD/*.h"
-#      "UI/MVD/*.cpp"
-#      "UI/PanelWidgets/*.h"
-#      "UI/PanelWidgets/*.cpp"
-#      "UI/PanelWidgets/**/*.h"
-#      "UI/PanelWidgets/**/*.cpp"
+include(ProjectTarget)
+
+set(PROJECT_TARGET_TYPE "#{TARGET_TYPE}")
+
+# 1. 源文件
+# generate.py 按目标类型放入入口文件：EXE 为 main.cpp，库为 library.cpp/h。
+# 显式源列表便于 review；新增文件后重新运行 CMake 即可（不要依赖 FILE(GLOB)）。
+if(PROJECT_TARGET_TYPE STREQUAL "EXE")
+    set(PROJECT_SOURCES main.cpp)
+else()
+    set(PROJECT_SOURCES library.cpp)
+endif()
+
+# 目标创建后仍可用 target_sources() 追加（例如按平台拆分实现）：
+# target_sources(${PROJECT_NAME} PRIVATE
+#     $<$<PLATFORM_ID:Windows>:windows_impl.cpp>
+#     $<$<PLATFORM_ID:Linux>:linux_impl.cpp>
 # )
+# 仅影响 IDE 展示的分组：
+# source_group("Sources" FILES ${PROJECT_SOURCES})
 
-# 1.2 文件分组, 告诉 IDE “在界面上怎么摆放这些文件”, 可选的，只影响开发体验
-# source_group(Src FILES ${Src})
-# source_group(Module FILES ${Module})
-# source_group(UI FILES ${UI})
-
-set(PROJECT_SOURCES
-    ${Src}
-    ${Module}
-    ${UI}
+# 2. 创建目标（Qt5/6 与可执行文件/库的差异由 ProjectTarget.cmake 统一处理）
+scaffold_add_project_target(${PROJECT_NAME}
+    TYPE ${PROJECT_TARGET_TYPE}
+    SOURCES ${PROJECT_SOURCES}
 )
 
-# 2. 添加项目 输出模式 add_executable/add_library
-if(QT_SUPPORT)
-	if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-        if(NOT "#{TARGET_TYPE}" STREQUAL "EXE")
-            add_library(${PROJECT_NAME} #{TARGET_TYPE} ${PROJECT_SOURCES})
-        else()
-            qt_add_executable(${PROJECT_NAME} MANUAL_FINALIZATION ${PROJECT_SOURCES})
-        endif()
+# 2.1 示例模块库（modules/math）：默认不接入构建；需要时在根 CMakeLists.txt
+# 添加 add_subdirectory(modules)，再取消下一行注释。
+# target_link_libraries(${PROJECT_NAME} PRIVATE math)
 
-        # 收集并添加资源文件（目标已存在）
-        file(GLOB_RECURSE RES_PATHS *.png *.jpg *.svg *.ico *.ttf *.webp *.js *.json *.html)
-        foreach (filepath ${RES_PATHS})
-            string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" filename ${filepath})
-            list(APPEND resource_files ${filename})
-        endforeach (filepath)
+# 2.2 标准库模块与编译器选项
+if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+    scaffold_enable_import_std(${PROJECT_NAME})
+endif()
 
-        qt_add_resources(${PROJECT_NAME} "${PROJECT_NAME}"
-            RESOURCES PREFIX "/"
-            FILES ${resource_files}
-        )
-    else ()
-        if(NOT "#{TARGET_TYPE}" STREQUAL "EXE")
-            qt5_add_big_resources(PROJECT_SOURCES ${PROJECT_NAME}.qrc)
-            add_library(${PROJECT_NAME} #{TARGET_TYPE} ${PROJECT_SOURCES})
-        else()
-            qt5_add_big_resources(PROJECT_SOURCES ${PROJECT_NAME}.qrc)
-            add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
-        endif()
-    endif ()
-else ()
-	if(NOT "#{TARGET_TYPE}" STREQUAL "EXE")
-		add_library(${PROJECT_NAME} #{TARGET_TYPE} ${PROJECT_SOURCES})
-	else()
-		add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
-	endif()
-endif ()
-
-# 1.1 自动刷新修改，推荐使用
-target_sources(${PROJECT_NAME} PRIVATE
-     main.cpp
-#     $<$<PLATFORM_ID:Windows>:src/windows_impl.cpp>
-#     $<$<PLATFORM_ID:Linux>:src/linux_impl.cpp>
-)
-
-# 2.0 示例模块库（modules/math）：默认不接入构建；需要时在根 CMakeLists.txt 加 add_subdirectory(modules) 并取消下一行注释
-#target_link_libraries(${PROJECT_NAME} PRIVATE math)
-
-# 2.1 模块依赖（一个项目只能有一个std module，或许应该提到全局CMakeLists.txt？）
-#if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
-#    include(../cmake/CxxModules.cmake)
-#endif()
-
-# 2.2 编译器设置
-include(../cmake/TargetCompilerFlags.cmake)
+include(CompilerOptions)
+scaffold_configure_target(${PROJECT_NAME})
 
 # 3. 包含路径
 # target_include_directories(${PROJECT_NAME} PRIVATE
@@ -96,64 +52,35 @@ include(../cmake/TargetCompilerFlags.cmake)
 #     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Src>
 # )
 
-# 4. 三方库依赖
-include(Dependencies.cmake)
+# 4. 三方库依赖（子项目级；根级依赖见根 CMakeLists.txt）
+include("${CMAKE_CURRENT_SOURCE_DIR}/Dependencies.cmake")
 
-# 5. 修改或添加目标（target）属性的命令。它的作用是让你在创建目标（如通过 add_executable 或 add_library）之后，单独调整该目标的编译、链接、调试等行为
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE #{MACOS_BUNDLE}
-    WIN32_EXECUTABLE #{WIN32_EXECUTABLE} # ON close console
-    LINK_WHAT_YOU_USE ON
-	# 仅使用 Visual Studio 生成器时生效，默认Ninja 不生效
-    # VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
-    # VS_DEBUGGER_COMMAND "$<TARGET_FILE:${PROJECT_NAME}>"
-)
-
-# qt 用于显式执行针对特定平台（如Android、iOS）的最终收尾任务，例如生成Android部署文件或iOS应用bundle
-if(QT_SUPPORT)
-	if (QT_VERSION_MAJOR EQUAL 6)
-		qt_finalize_executable(${PROJECT_NAME})
-	endif ()
-endif ()
-
-set(PROJECT_INSTALL_RUNTIME_DIR "${CMAKE_INSTALL_BINDIR}")
-set(PROJECT_INSTALL_LIBRARY_DIR "${CMAKE_INSTALL_LIBDIR}")
-set(PROJECT_INSTALL_ARCHIVE_DIR "${CMAKE_INSTALL_LIBDIR}")
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(PROJECT_INSTALL_RUNTIME_DIR "debug/${CMAKE_INSTALL_BINDIR}")
-    set(PROJECT_INSTALL_LIBRARY_DIR "debug/${CMAKE_INSTALL_LIBDIR}")
-    set(PROJECT_INSTALL_ARCHIVE_DIR "debug/${CMAKE_INSTALL_LIBDIR}")
-elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    set(PROJECT_INSTALL_RUNTIME_DIR "relwithdebinfo/${CMAKE_INSTALL_BINDIR}")
-    set(PROJECT_INSTALL_LIBRARY_DIR "relwithdebinfo/${CMAKE_INSTALL_LIBDIR}")
-    set(PROJECT_INSTALL_ARCHIVE_DIR "relwithdebinfo/${CMAKE_INSTALL_LIBDIR}")
-endif()
-
-install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION "${PROJECT_INSTALL_RUNTIME_DIR}"
-    LIBRARY DESTINATION "${PROJECT_INSTALL_LIBRARY_DIR}"
-    ARCHIVE DESTINATION "${PROJECT_INSTALL_ARCHIVE_DIR}"
-)
-
-if(NOT "#{TARGET_TYPE}" STREQUAL "EXE")
-    install(
-        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}"
-        FILES_MATCHING
-            PATTERN "*.h"
-            PATTERN "*.hpp"
-            PATTERN "*.ixx"
-            PATTERN "*.cppm"
+# 5. 目标属性
+# Bundle/控制台属性只对可执行文件有意义；LINK_WHAT_YOU_USE 只对会链接的目标设置。
+if(PROJECT_TARGET_TYPE STREQUAL "EXE")
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+        MACOSX_BUNDLE #{MACOS_BUNDLE}
+        # ON = Windows 上使用窗口子系统（GUI）：不弹出随程序存在的控制台窗口
+        WIN32_EXECUTABLE #{WIN32_EXECUTABLE}
     )
 endif()
+if(NOT PROJECT_TARGET_TYPE STREQUAL "STATIC")
+    set_target_properties(${PROJECT_NAME} PROPERTIES LINK_WHAT_YOU_USE ON)
+endif()
 
-# 6. 给当前项目添加依赖/源文件，如自定义工具，代码生成器等，在项目执行之前构建好，本项目依赖于它，必须最后撰写
-# 6.1 示例1-依赖 自己撰写代码生成器可执行文件执行生成代码文件到 本项目的UI文件夹下
-# 资源生成工具：编译并运行，生成 ArtisticLetteringPixels.h / Contours.h
+# Qt6 的可执行目标必须显式 finalize；库目标不会被误传给 qt_finalize_executable。
+scaffold_finalize_project_target(${PROJECT_NAME})
+
+# 6. 安装
+# Debug/RelWithDebInfo 使用独立目录前缀；库目标同时安装匹配的头文件。
+scaffold_install_project_target(${PROJECT_NAME})
+
+# 7. 代码生成示例（按需启用）
+# 7.1 依赖自己撰写的代码生成器：编译并运行，产物作为源码/头文件
 # set(ARTISTIC_LETTERING_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/UI/App")
-# 
+#
 # add_executable(GenerateAssets
 #     Tools/GenerateAssets.cpp
 # )
@@ -165,35 +92,32 @@ endif()
 #     PROJECT_DIRECTORY="${CMAKE_CURRENT_SOURCE_DIR}"
 #     PROJECT_OUTPUT_DIR="${ARTISTIC_LETTERING_OUTPUT_DIR}"
 # )
-# if(MSVC)
-#     target_compile_options(GenerateAssets PRIVATE
-#         "/wd4819"
-#     )
-# 
-#     # 关闭 /showIncludes
-#     string(REPLACE "/showIncludes" "" CMAKE_DEPFILE_FLAGS_C "${CMAKE_DEPFILE_FLAGS_C}")
-#     string(REPLACE "/showIncludes" "" CMAKE_DEPFILE_FLAGS_CXX "${CMAKE_DEPFILE_FLAGS_CXX}")
+# if(COMPILER_MSVC_LIKE)
+#     target_compile_options(GenerateAssets PRIVATE "/wd4819")
+#
+#     # 不要从 CMAKE_DEPFILE_FLAGS_* 中删除 /showIncludes：它是 Ninja 头文件依赖的来源。
+#     # 本地化前缀由 cmake/ShowIncludesPrefix.cmake（CMake < 4.4）或 CMake 4.4 自带机制处理。
 # endif()
 # target_link_libraries(GenerateAssets PRIVATE
 #     Qt::Core
 #     Qt::Gui
 # )
-# 
-# # 主项目构建前自动运行 GenerateAssets
+#
 # add_custom_target(RunGenerateAssets ALL
 #     COMMAND GenerateAssets
 #     DEPENDS GenerateAssets
-#     COMMENT "▶ Generating ArtisticLettering assets (Pixels.h + Contours.h)..."
+#     COMMENT "Generating assets..."
 # )
 # add_dependencies(${PROJECT_NAME} RunGenerateAssets)
 
-# 6.2 示例2-源文件，使用python 执行命令将proto输出h/cpp 文件 作为源文件包含到本项目
+# 7.2 使用脚本（如 protoc）生成源码：add_custom_command(OUTPUT ...) 声明产物，
+#     再用 target_sources() 加入目标；CONFIGURE_DEPENDS 不可用于这种生成流程。
 # set(PROTO_GEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/IPC/Generated")
 # set(PROTO_FILE "${CMAKE_SOURCE_DIR}/Protocols/IPC.proto")
 # set(PROTO_SCRIPT "${CMAKE_SOURCE_DIR}/Script/generate_proto.py")
-# 
+#
 # find_package(Python3 REQUIRED)
-# 
+#
 # add_custom_command(
 #     OUTPUT
 #         ${PROTO_GEN_DIR}/IPC.pb.h
@@ -202,9 +126,9 @@ endif()
 #         ${PROTO_GEN_DIR}/IPC.grpc.pb.cc
 #     COMMAND Python3::Interpreter ${PROTO_SCRIPT}
 #     DEPENDS ${PROTO_FILE}
-#     COMMENT "▶ Generating protobuf/gRPC C++ code from IPC.proto ..."
+#     COMMENT "Generating protobuf/gRPC code from IPC.proto ..."
 # )
-# 
+#
 # target_sources(${PROJECT_NAME} PRIVATE
 #     ${PROTO_GEN_DIR}/IPC.pb.cc
 #     ${PROTO_GEN_DIR}/IPC.grpc.pb.cc

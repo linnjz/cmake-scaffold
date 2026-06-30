@@ -1,4 +1,4 @@
-﻿# Docs: https://clang.llvm.org/extra/clang-tidy/checks/list.html
+﻿# Documents：https://clang.llvm.org/extra/clang-tidy/checks/list.html
 ExtraArgs: [-std=c++23]
 
 Checks: '-*,

@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
-
-project(math
+﻿project(math
     VERSION 1.0.0
     LANGUAGES CXX
 )
@@ -17,12 +15,16 @@ target_sources(math PRIVATE
     FILES "math.cppm"
 )
 
-# math 只是普通静态库，自身不 import std；std 模块由主目标统一编译（见 cmake/CxxModules.cmake），
-# 这里再 include 一次会让同一个 std 模块被两个目标编译。
-include(../cmake/TargetCompilerFlags.cmake)
+# math is just a plain static library and does not import std itself; the std module is
+# compiled centrally by the main target (see cmake/ImportStd.cmake). 
+# Enabling it again here would cause the same std module to be compiled by two targets.
+include(CompilerOptions)
+scaffold_configure_target(${PROJECT_NAME})
 
+set(_config_prefix
+    "$<$<CONFIG:Debug>:debug/>$<$<CONFIG:RelWithDebInfo>:relwithdebinfo/>")
 install(TARGETS math
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    RUNTIME DESTINATION "${_config_prefix}${CMAKE_INSTALL_BINDIR}"
+    LIBRARY DESTINATION "${_config_prefix}${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${_config_prefix}${CMAKE_INSTALL_LIBDIR}"
 )

@@ -96,9 +96,19 @@
         "CMAKE_CXX_COMPILER": "clang++"
       },
       "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
+        "type": "anyOf",
+        "conditions": [
+          {
+            "type": "equals",
+            "lhs": "${hostSystemName}",
+            "rhs": "Windows"
+          },
+          {
+            "type": "equals",
+            "lhs": "${hostSystemName}",
+            "rhs": "Linux"
+          }
+        ]
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {

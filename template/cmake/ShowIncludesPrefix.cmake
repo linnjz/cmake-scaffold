@@ -16,8 +16,22 @@
 # CMake 4.4 stores the detected value in CMAKE_<LANG>_CL_SHOWINCLUDES_PREFIX;
 # the built-in detection lives in CMAKE_DETERMINE_MSVC_SHOWINCLUDES_PREFIX
 # (CMakeDetermineCompilerId.cmake), which feeds the same regex used below.
+#
+# On CMake >= 4.4 this file must do nothing: the built-in detection runs for
+# Ninja generators, keeps the value as decoded Unicode (CMakeCXXCompiler.cmake
+# stores "注意: 包含文件:  " in UTF-8), and the Ninja writer re-encodes it to
+# the local code page when writing rules.ninja, matching cl.exe byte for byte.
+# Writing the raw code-page bytes into the variable instead makes it invalid
+# UTF-8, and CMake 4.4 silently omits CMakeFiles/rules.ninja (configure still
+# exits 0; ninja then dies with "loading 'CMakeFiles/rules.ninja': The system
+# cannot find the file specified"). The workaround is only needed for the
+# older CMake versions that do not detect the prefix for Ninja themselves.
 
 if(NOT MSVC OR NOT CMAKE_GENERATOR MATCHES "^Ninja")
+  return()
+endif()
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
   return()
 endif()
 

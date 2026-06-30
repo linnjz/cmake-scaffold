@@ -13,22 +13,22 @@ IndentWidth: 2                              # 缩进宽度
 ColumnLimit: 0                              # 每行字符的限制，0 表示没有限制
 AccessModifierOffset: -2                    # 访问说明符 (public、private 等) 的偏移
 MaxEmptyLinesToKeep: 2                      # 连续空行的最大数量
-BinPackArguments: true # true 函数调用的参数要么都在同一行，false各一行。
-BinPackParameters: OnePerLine # 函数定义参数自动选择同一行还是各一行。
-AlignConsecutiveDeclarations: None # 对齐连续声明的样式。
-AlignConsecutiveAssignments: Consecutive # 对齐连续赋值的样式, None不对齐
-AllowShortBlocksOnASingleLine: Never # Never\Empty\Always
-AllowShortFunctionsOnASingleLine: InlineOnly # InlineOnly只合并类中定义的函数, 可选Empty\Inline\All
+BinPackArguments: true                      # true 函数调用的参数要么都在同一行，false各一行。
+BinPackParameters: OnePerLine               # 函数定义参数自动选择同一行还是各一行。
+AlignConsecutiveDeclarations: None          # 对齐连续声明的样式。
+AlignConsecutiveAssignments: Consecutive    # 对齐连续赋值的样式, None不对齐
+AllowShortBlocksOnASingleLine: Never        # Never\Empty\Always
+AllowShortFunctionsOnASingleLine: InlineOnly     # InlineOnly只合并类中定义的函数, 可选Empty\Inline\All
 AllowShortIfStatementsOnASingleLine: WithoutElse # Never\WithoutElse\OnlyFirstIf\AllIfsAndElse
-AllowShortLambdasOnASingleLine: All # None\Inline\All
-AllowShortLoopsOnASingleLine: true          # 允许短的循环保持在同一行
+AllowShortLambdasOnASingleLine: All              # None\Inline\All
+AllowShortLoopsOnASingleLine: true               # 允许短的循环保持在同一行
 # 为 None PenaltyReturnTypeOnItsOwnLine 才被考虑在内
-AlwaysBreakAfterReturnType: None # None\All\TopLevel\TopLevelDefinitions\AllDefinitions
-AlignAfterOpenBracket: AlwaysBreak # Align\AlwaysBreak
+AlwaysBreakAfterReturnType: None                 # None\All\TopLevel\TopLevelDefinitions\AllDefinitions
+AlignAfterOpenBracket: AlwaysBreak               # Align\AlwaysBreak
 
 # { 是否以下一行开始
 BraceWrapping:
-  AfterCaseLabel: false                      # case 标签后面换行
+  AfterCaseLabel: false                     # case 标签后面换行
   AfterClass: true                          # class 定义后面换行
   AfterControlStatement: false              # 控制语句后面换行
   AfterEnum: true                           # enum 定义后面换行
@@ -40,21 +40,22 @@ BraceWrapping:
   AfterUnion: true                          # union 定义后面换行
   BeforeCatch: false                        # catch 之前换行
   BeforeElse: false                         # else 之前换行
-  BeforeLambdaBody: false                    # Lambda {} 之前换行
+  BeforeLambdaBody: false                   # Lambda {} 之前换行
   BeforeWhile: false                        # while 之前换行
   IndentBraces: false                       # 缩进大括号
   SplitEmptyFunction: true                  # 空函数体是否拆开
   SplitEmptyNamespace: true                 # 空命名空间是否拆开
   SplitEmptyRecord: true                    # 空记录体 (struct/class/union) 是否拆开
 
-LambdaBodyIndentation: OuterScope # Signature\OuterScope
+LambdaBodyIndentation: OuterScope           # Signature\OuterScope
 
 PointerAlignment: Right                     # 指针和引用的对齐: Left, Right, Middle
 ReferenceAlignment: Right                   # 引用对齐方向，选项有：Left，Right，Middle
-SortUsingDeclarations: Lexicographic # Never\Lexicographic\LexicographicNumeric
+SortUsingDeclarations: Lexicographic        # Never\Lexicographic\LexicographicNumeric
 
 QualifierAlignment: Custom                  # 将限定符放在哪一边：Left, Right, Custom
-QualifierOrder: ['friend', 'inline', 'static', 'constexpr', 'restrict', 'type', 'const', 'volatile']  # 自定义限定符的排序（仅当 QualifierAlignment 为 Custom 时有效）
+# 自定义限定符的排序（仅当 QualifierAlignment 为 Custom 时有效）
+QualifierOrder: ['friend', 'inline', 'static', 'constexpr', 'restrict', 'type', 'const', 'volatile']  
 
 # end
 AlignArrayOfStructures: Left                # 结构体数组对齐方式
@@ -125,7 +126,7 @@ IncludeCategories:
   - Regex: '^".*"$'
     Priority: 4
 IncludeIsMainRegex: '([-_](test|unittest))?$'  # 指定包含主头文件的正则
-SortIncludes: false                          # 允许排序 #include
+SortIncludes: false                            # 允许排序 #include
 
 IndentAccessModifiers: false                # 指定访问修饰符是否应该有自己的缩进级别
 IndentCaseBlocks: false                     # 缩进 case 块

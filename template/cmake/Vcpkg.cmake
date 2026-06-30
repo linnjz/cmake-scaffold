@@ -1,4 +1,138 @@
-﻿# ==============================================================================
+# vcpkg integration: root detection, triplet defaults and the
+# FindVcpkgPackage() helper. Included from the root CMakeLists.txt when the
+# project uses vcpkg (the include line is commented out by default).
+#
+# The MSVC runtime library choice stays in CompilerId.cmake (MSVC_RUNTIME_MODE);
+# this file only consumes it to pick a matching vcpkg triplet.
+#
+# The old VcpkgConfig.cmake had two problems that are gone here:
+#   - it hard-coded a personal vcpkg checkout (E:/Development/vcpkg) as the
+#     Windows default;
+#   - its MSVC include/modules directory probing duplicated what ImportStd.cmake
+#     does for `import std;` and what the INCLUDE environment already provides.
+
+include_guard(GLOBAL)
+
+# -----------------------------------------------------------------------------
+# vcpkg root detection: toolchain file > VCPKG_ROOT cache/environment >
+# platform conventions. No machine-specific path is assumed.
+# -----------------------------------------------------------------------------
+if(DEFINED CMAKE_TOOLCHAIN_FILE AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+    # <root>/scripts/buildsystems/vcpkg.cmake
+    get_filename_component(_vcpkg_buildsystems_dir "${CMAKE_TOOLCHAIN_FILE}" DIRECTORY)
+    get_filename_component(_vcpkg_scripts_dir "${_vcpkg_buildsystems_dir}" DIRECTORY)
+    get_filename_component(_vcpkg_root "${_vcpkg_scripts_dir}" DIRECTORY)
+    set(VCPKG_ROOT "${_vcpkg_root}" CACHE PATH "Vcpkg root directory" FORCE)
+    unset(_vcpkg_buildsystems_dir)
+    unset(_vcpkg_scripts_dir)
+    unset(_vcpkg_root)
+elseif(NOT DEFINED VCPKG_ROOT OR VCPKG_ROOT STREQUAL "")
+    # FORCE matters for the documented recovery flow: an earlier configure
+    # without VCPKG_ROOT wrote an empty cache entry inside the no-env branch
+    # below, and plain `set(... CACHE ...)` would keep that empty value even
+    # after the user exports VCPKG_ROOT and reconfigures.
+    if(DEFINED ENV{VCPKG_ROOT} AND NOT "$ENV{VCPKG_ROOT}" STREQUAL "")
+        set(VCPKG_ROOT "$ENV{VCPKG_ROOT}" CACHE PATH "Vcpkg root directory" FORCE)
+    elseif(UNIX AND NOT APPLE)
+        set(VCPKG_ROOT "$ENV{HOME}/vcpkg" CACHE PATH "Vcpkg root directory")
+    elseif(APPLE)
+        set(VCPKG_ROOT "/opt/vcpkg" CACHE PATH "Vcpkg root directory")
+    else()
+        set(VCPKG_ROOT "" CACHE PATH "Vcpkg root directory")
+        message(WARNING
+            "VCPKG_ROOT is not set: export it in the environment or configure with "
+            "-DVCPKG_ROOT=<path> before using FindVcpkgPackage()")
+    endif()
+endif()
+
+# -----------------------------------------------------------------------------
+# Triplet defaults. The static triplet follows MSVC_RUNTIME_MODE so the CRT
+# linkage cannot silently disagree between the project and its dependencies
+# (e.g. x64-windows-static links /MT, x64-windows-static-md links /MD).
+#
+# The architecture prefix follows the compiler target, not the host: MSVC
+# reports it via CMAKE_<LANG>_COMPILER_ARCHITECTURE_ID (x64/x86/ARM/ARM64/...),
+# everything else falls back to CMAKE_SYSTEM_PROCESSOR. x64 remains the
+# fallback for unrecognized values to preserve the previous default.
+# -----------------------------------------------------------------------------
+set(_vcpkg_arch "x64")
+if(CMAKE_CXX_COMPILER_ARCHITECTURE_ID)
+    string(TOLOWER "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}" _vcpkg_arch)
+elseif(CMAKE_SYSTEM_PROCESSOR)
+    string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _vcpkg_processor)
+    if(_vcpkg_processor MATCHES "^(amd64|x86_64)$")
+        set(_vcpkg_arch "x64")
+    elseif(_vcpkg_processor MATCHES "^(x86|i[3-6]86)$")
+        set(_vcpkg_arch "x86")
+    elseif(_vcpkg_processor MATCHES "^(aarch64|arm64)")
+        set(_vcpkg_arch "arm64")
+    elseif(_vcpkg_processor MATCHES "^arm")
+        set(_vcpkg_arch "arm")
+    endif()
+    unset(_vcpkg_processor)
+endif()
+
+if(WIN32)
+    if(MSVC_RUNTIME_MODE STREQUAL "MT")
+        if(NOT DEFINED VCPKG_STATIC_TRIPLET OR VCPKG_STATIC_TRIPLET STREQUAL "")
+            set(VCPKG_STATIC_TRIPLET "${_vcpkg_arch}-windows-static" CACHE STRING "Vcpkg static triplet")
+        endif()
+    else()
+        if(NOT DEFINED VCPKG_STATIC_TRIPLET OR VCPKG_STATIC_TRIPLET STREQUAL "")
+            set(VCPKG_STATIC_TRIPLET "${_vcpkg_arch}-windows-static-md" CACHE STRING "Vcpkg static triplet")
+        endif()
+    endif()
+    if(NOT DEFINED VCPKG_DYNAMIC_TRIPLET OR VCPKG_DYNAMIC_TRIPLET STREQUAL "")
+        set(VCPKG_DYNAMIC_TRIPLET "${_vcpkg_arch}-windows" CACHE STRING "Vcpkg dynamic triplet")
+    endif()
+elseif(UNIX AND NOT APPLE)
+    if(NOT DEFINED VCPKG_STATIC_TRIPLET OR VCPKG_STATIC_TRIPLET STREQUAL "")
+        set(VCPKG_STATIC_TRIPLET "${_vcpkg_arch}-linux-static" CACHE STRING "Vcpkg static triplet")
+    endif()
+    if(NOT DEFINED VCPKG_DYNAMIC_TRIPLET OR VCPKG_DYNAMIC_TRIPLET STREQUAL "")
+        set(VCPKG_DYNAMIC_TRIPLET "${_vcpkg_arch}-linux" CACHE STRING "Vcpkg dynamic triplet")
+    endif()
+elseif(APPLE)
+    if(NOT DEFINED VCPKG_STATIC_TRIPLET OR VCPKG_STATIC_TRIPLET STREQUAL "")
+        set(VCPKG_STATIC_TRIPLET "${_vcpkg_arch}-osx-static" CACHE STRING "Vcpkg static triplet")
+    endif()
+    if(NOT DEFINED VCPKG_DYNAMIC_TRIPLET OR VCPKG_DYNAMIC_TRIPLET STREQUAL "")
+        set(VCPKG_DYNAMIC_TRIPLET "${_vcpkg_arch}-osx" CACHE STRING "Vcpkg dynamic triplet")
+    endif()
+endif()
+unset(_vcpkg_arch)
+
+# Without a root the path helpers below would degrade to bogus absolute paths
+# such as "/installed/x64-windows" and pollute CMAKE_PREFIX_PATH. Skip them:
+# FindVcpkgPackage() still works with an explicit INSTALLED_DIR argument.
+if(VCPKG_ROOT)
+    set(VCPKG_STATIC_PATH "${VCPKG_ROOT}/installed/${VCPKG_STATIC_TRIPLET}")
+    set(VCPKG_STATIC_INCLUDE_PATH "${VCPKG_STATIC_PATH}/include")
+    set(VCPKG_STATIC_LIBRARY_PATH "${VCPKG_STATIC_PATH}/lib")
+    set(VCPKG_STATIC_DEBUG_LIBRARY_PATH "${VCPKG_STATIC_PATH}/debug/lib")
+    set(VCPKG_STATIC_CMAKE_PATH "${VCPKG_STATIC_PATH}/share")
+    set(VCPKG_STATIC_TOOLS_PATH "${VCPKG_STATIC_PATH}/tools")
+
+    set(VCPKG_DYNAMIC_PATH "${VCPKG_ROOT}/installed/${VCPKG_DYNAMIC_TRIPLET}")
+    set(VCPKG_DYNAMIC_BIN_PATH "${VCPKG_DYNAMIC_PATH}/bin")
+    set(VCPKG_DYNAMIC_DEBUG_BIN_PATH "${VCPKG_DYNAMIC_PATH}/debug/bin")
+    set(VCPKG_DYNAMIC_INCLUDE_PATH "${VCPKG_DYNAMIC_PATH}/include")
+    set(VCPKG_DYNAMIC_LIBRARY_PATH "${VCPKG_DYNAMIC_PATH}/lib")
+    set(VCPKG_DYNAMIC_DEBUG_LIBRARY_PATH "${VCPKG_DYNAMIC_PATH}/debug/lib")
+    set(VCPKG_DYNAMIC_CMAKE_PATH "${VCPKG_DYNAMIC_PATH}/share")
+    set(VCPKG_DYNAMIC_TOOLS_PATH "${VCPKG_DYNAMIC_PATH}/tools")
+
+    message(STATUS "Vcpkg root: ${VCPKG_ROOT}")
+    message(STATUS "Vcpkg static path: ${VCPKG_STATIC_PATH}")
+    message(STATUS "Vcpkg dynamic path: ${VCPKG_DYNAMIC_PATH}")
+
+    # Only consulted by plain find_package() calls: FindVcpkgPackage() passes
+    # NO_DEFAULT_PATH by default, which disables the CMAKE_PREFIX_PATH search
+    # (it relies on HINTS pointing into the triplet directory instead).
+    list(APPEND CMAKE_PREFIX_PATH ${VCPKG_STATIC_PATH} ${VCPKG_DYNAMIC_PATH})
+endif()
+
+# ==============================================================================
 # FindVcpkgPackage
 #
 # 在 vcpkg 安装目录中查找指定的包，并调用 find_package。
@@ -28,7 +162,7 @@
 #       [INSTALLED_DIR <dir>]                         # 覆盖 VCPKG_INSTALLED_DIR
 #       [REGISTRY_VIEW <view>]                        # 注册表视图（Windows）
 #       [ALLOW_DEFAULT_PATH]                           # 允许回退到系统默认路径
-#       [NO_DEFAULT_PATH]                              # 禁用默认路径（包括 vcpkg 路径？实际由 ALLOW_DEFAULT_PATH 控制）
+#       [NO_DEFAULT_PATH]                              # 显式禁用默认路径（默认已禁用；与 ALLOW_DEFAULT_PATH 互斥）
 #       [NO_PACKAGE_ROOT_PATH ...]                     # 以下为 find_package 路径控制标志，全部支持
 #       [NO_CMAKE_PATH]
 #       [NO_CMAKE_ENVIRONMENT_PATH]
@@ -49,7 +183,7 @@
 # 依赖的外部变量（可通过缓存或环境变量设置）：
 #   VCPKG_ROOT                     - vcpkg 根目录（必须设置或由 INSTALLED_DIR 替代）
 #   VCPKG_INSTALLED_DIR            - 覆盖 installed 目录（默认为 ${VCPKG_ROOT}/installed）
-#   VCPKG_STATIC_TRIPLET           - 静态链接使用的 triplet（例如 x64-windows-static）
+#   VCPKG_STATIC_TRIPLET           - 静态链接使用的 triplet（例如 x64-windows-static-md）
 #   VCPKG_DYNAMIC_TRIPLET          - 动态链接使用的 triplet（例如 x64-windows）
 #   VCPKG_TARGET_TRIPLET           - 目标 triplet（当 LINKAGE=AUTO 时使用）
 #
@@ -57,6 +191,8 @@
 #   - TRIPLET 参数优先级高于 LINKAGE，若同时指定则忽略 LINKAGE。
 #   - 默认情况下，函数会清除 <Package>_DIR 和 <Package>_ROOT 缓存，以确保每次重新查找。
 #   - 默认禁用系统默认路径（相当于 NO_DEFAULT_PATH），除非显式指定 ALLOW_DEFAULT_PATH。
+#   - 默认每次调用都会更新 VCPKG_INSTALLED_DIR/VCPKG_TARGET_TRIPLET 缓存；同一工程混合
+#     STATIC/DYNAMIC 时缓存值跟随最后一次调用，需要稳定值时传 KEEP_VCPKG_CACHE。
 #   - 支持 find_package 的所有标准参数，只需在调用时传入即可。
 #
 # 示例：
@@ -106,8 +242,9 @@ function(FindVcpkgPackage package_name)
     set(one_value_args LINKAGE VERSION TRIPLET INSTALLED_DIR REGISTRY_VIEW)
     # 定义多值参数（可带多个值的参数）
     set(multi_value_args COMPONENTS OPTIONAL_COMPONENTS NAMES HINTS PATHS PATH_SUFFIXES)
-    # 解析传入的参数
-    cmake_parse_arguments(FVP "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+    # 解析传入的参数。PARSE_ARGV 的索引落在 ARGV 上（含具名参数），必须跳过
+    # package_name，否则它会被当成位置参数进入 FVP_UNPARSED_ARGUMENTS。
+    cmake_parse_arguments(PARSE_ARGV 1 FVP "${options}" "${one_value_args}" "${multi_value_args}")
 
     # ====== 参数合法性检查 ======
     if(FVP_EXACT AND NOT FVP_VERSION)
@@ -315,153 +452,9 @@ function(FindVcpkgPackage package_name)
     endif()
     if(NOT FVP_KEEP_PACKAGE_ROOT)
         unset(${package_name}_ROOT CACHE)
-        string(TOUPPER "${package_name}" package_name_upper)
         unset(${package_name_upper}_ROOT CACHE)
     endif()
 
     # ====== 调用真正的 find_package ======
     find_package(${find_args})
-endfunction()
-
-function(CopyTargetDependentLibs target_name lib_base_names release_lib_path)
-    if(NOT TARGET ${target_name})
-        message(WARNING "Target ${target_name} does not exist, skipping library copy")
-        return()
-    endif()
-
-    set(debug_lib_path "${ARGV3}")
-    if(NOT debug_lib_path)
-        set(debug_lib_path "${release_lib_path}")
-    endif()
-
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(search_path "${debug_lib_path}")
-    else()
-        set(search_path "${release_lib_path}")
-    endif()
-
-    if(NOT EXISTS "${search_path}")
-        message(WARNING "Library search path does not exist: ${search_path}")
-        return()
-    endif()
-
-    # Process each library
-    foreach(LIB_BASE_NAME ${lib_base_names})
-        # Platform-specific file pattern (handle versioned .so on Linux)
-        if(UNIX AND NOT APPLE)  # Linux: match .so, .so.1, .so.1.2.3 etc.
-            set(LIB_PATTERN "${LIB_BASE_NAME}${SHARED_LIB_SUFFIX}*")
-        else()  # Windows/macOS: exact suffix match (no version wildcard)
-            set(LIB_PATTERN "${LIB_BASE_NAME}${SHARED_LIB_SUFFIX}")
-        endif()
-
-        # Find all matching library files
-        file(GLOB LIB_FILES 
-            "${search_path}/${LIB_PATTERN}"
-            LIST_DIRECTORIES false  # Exclude directories from results
-        )
-
-        unset(FOUND_LIBS)
-        # Filter out invalid files (only keep regular files)
-        foreach(LIB_FILE ${LIB_FILES})
-            if(EXISTS "${LIB_FILE}" AND NOT IS_DIRECTORY "${LIB_FILE}")
-                get_filename_component(FILE_EXT "${LIB_FILE}" LAST_EXT)
-                if(FILE_EXT MATCHES "\\.(dll|so|dylib|lib|a)$" OR 
-                   (WIN32 AND (NOT FILE_EXT OR FILE_EXT STREQUAL ".dll")))
-                    # Copy library to target output directory (only if different)
-                    add_custom_command(TARGET ${target_name} POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                            "${LIB_FILE}"
-                            $<TARGET_FILE_DIR:${target_name}>
-                        COMMENT "Copying ${LIB_FILE} to output directory"
-                    )
-                    list(APPEND FOUND_LIBS "${LIB_FILE}")
-                endif()
-            endif()
-        endforeach()
-
-        if(NOT FOUND_LIBS)
-            message(WARNING "No shared library files found for pattern: ${search_path}/${LIB_PATTERN}")
-        else()
-            message(STATUS "Copied libraries for ${LIB_BASE_NAME}: ${FOUND_LIBS}")
-        endif()
-    endforeach()
-endfunction()
-
-function(SetTargetRuntimeDependencyPath target_name)
-  if(WIN32)
-    # For Visual Studio, set debug environment path
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-      set(vcpkg_bin_path "${VCPKG_DEBUG_BIN_PATH}")
-    else()
-      set(vcpkg_bin_path "${VCPKG_BIN_PATH}")
-    endif()
-
-    set_target_properties(${target_name} PROPERTIES
-      VS_DEBUGGER_ENVIRONMENT "PATH=${vcpkg_bin_path};$ENV{PATH}"
-    )
-  else()
-    # # For Unix-like (Linux/macOS), set RPATH
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-      set(rpath "${VCPKG_DEBUG_BIN_PATH}:${VCPKG_DEBUG_BIN_PATH}/../lib")
-    else()
-      set(rpath "${VCPKG_BIN_PATH}:${VCPKG_BIN_PATH}/../lib")
-    endif()
-        
-    set_target_properties(${target_name} PROPERTIES
-      BUILD_WITH_INSTALL_RPATH TRUE
-      INSTALL_RPATH "${rpath}"
-    )
-  endif()
-endfunction()
-
-
-function(IMPORTED_LIBRARY target_name lib_base_name library_dir)
-    if(TARGET ${target_name})
-        return()
-    endif()
-
-    set(lib_path "${library_dir}/${lib_base_name}${LIB_SUFFIX}")
-    set(shared_lib_base "${library_dir}/${lib_base_name}${SHARED_LIB_SUFFIX}")
-
-    # Handle wildcard for versioned .so files (Linux only)
-    set(shared_lib_path "${shared_lib_base}")
-    if(UNIX AND NOT APPLE)
-        # Use glob to find any versioned .so (e.g., .so, .so.3, .so.3.3.0)
-        file(GLOB versioned_libs "${shared_lib_base}*")
-        if(versioned_libs)
-            # Pick the first matched library (prioritize full version if exists)
-            list(SORT versioned_libs COMPARE NATURAL ORDER DESCENDING)
-            list(GET versioned_libs 0 shared_lib_path)
-        endif()
-    endif()
-
-    if(NOT EXISTS "${shared_lib_path}")
-        message(WARNING "❌ Shared library not found: ${shared_lib_base}*")
-        return()
-    endif()
-
-    # Create imported target
-    add_library(${target_name} SHARED IMPORTED)
-    
-    # Set platform-specific properties
-    if(WIN32)
-        set_target_properties(${target_name} PROPERTIES
-            IMPORTED_LOCATION "${shared_lib_path}"
-            IMPORTED_IMPLIB "${lib_path}"
-            IMPORTED_LOCATION_DEBUG "${shared_lib_path}"
-            IMPORTED_IMPLIB_DEBUG "${lib_path}"
-            IMPORTED_LOCATION_RELEASE "${shared_lib_path}"
-            IMPORTED_IMPLIB_RELEASE "${lib_path}"
-            IMPORTED_LOCATION_RELWITHDEBINFO "${shared_lib_path}"
-            IMPORTED_IMPLIB_RELWITHDEBINFO "${lib_path}"
-            IMPORTED_LOCATION_MINSIZEREL "${shared_lib_path}"
-            IMPORTED_IMPLIB_MINSIZEREL "${lib_path}"
-        )
-    else()
-        set_target_properties(${target_name} PROPERTIES
-            IMPORTED_LOCATION "${shared_lib_path}"  # .so/.dylib path
-        )
-    endif()
-
-    message(STATUS "✅ Found library: ${shared_lib_path}")
 endfunction()

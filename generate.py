@@ -310,8 +310,11 @@ def replace_placeholders(text, replacements, where=""):
 def read_file(path):
     # utf-8-sig: several template files are stored with a UTF-8 BOM. Reading it as plain utf-8 would
     # carry the BOM into the rendered file, where strict parsers (JSON) reject it.
-    with open(path, "r", encoding="utf-8-sig") as f:
-        return f.read()
+    try:
+        with open(path, "r", encoding="utf-8-sig") as f:
+            return f.read()
+    except UnicodeDecodeError as exc:
+        fail(f"{path} is not valid UTF-8: {exc}")
 
 
 def write_file(path, content):
@@ -465,9 +468,10 @@ def process_subs(config, values):
             sub.get("version") or project.get("version") or "1.0.0", f"[[project.sub]] '{dir_name}' version"
         )
         sub_values["SUB_PROJECT_DESCRIPTION"] = sub.get("description") or project.get("description", "")
-        sub_values["TARGET_TYPE"] = canonical_choice(
+        target_type = canonical_choice(
             sub.get("target_type", "EXE"), ALL_TARGET_TYPES, "[[project.sub]].target_type"
         )
+        sub_values["TARGET_TYPE"] = target_type
         sub_values["MACOS_BUNDLE"] = "ON" if sub.get("macos_bundle", True) else "OFF"
         sub_values["WIN32_EXECUTABLE"] = "ON" if sub.get("win32_executable", True) else "OFF"
 
@@ -484,8 +488,11 @@ def process_subs(config, values):
             replace_placeholders(read_file(src_cmake), cmake_values, src_cmake.name),
         )
 
+        # Only the default source set for the target type is copied: an EXE
+        # subproject must not carry library.cpp/library.h and vice versa.
+        skipped_sources = {"library.cpp", "library.h"} if target_type == "EXE" else {"main.cpp"}
         for item in (TEMPLATE_DIR / "src").iterdir():
-            if item.name in ("CMakeLists.txt", "Dependencies.cmake"):
+            if item.name in ("CMakeLists.txt", "Dependencies.cmake") or item.name in skipped_sources:
                 continue
             dest = sub_dir / item.name
             if item.is_dir():
@@ -505,16 +512,30 @@ def copy_remaining_root_items():
             copy_file(item, dest)
 
 
-def copy_cmake_dir():
+def copy_cmake_dir(values):
     src = TEMPLATE_DIR / "cmake"
     dest = OUTPUT_DIR / "cmake"
-    if src.exists():
-        copy_tree(src, dest)
+    if not src.exists():
+        return
+    cmake_values = for_cmake(values)
+    for item in src.rglob("*"):
+        rel = item.relative_to(src)
+        if item.is_dir():
+            (dest / rel).mkdir(parents=True, exist_ok=True)
+        elif item.suffix == ".cmake":
+            # cmake/*.cmake may carry #{} placeholders (e.g. QtSupport.cmake);
+            # render them like the root CMakeLists.txt instead of copying raw.
+            write_file(
+                dest / rel,
+                replace_placeholders(read_file(item), cmake_values, str(rel)),
+            )
+        else:
+            copy_file(item, dest / rel)
 
 
 HOST_COMPILERS = {
     "nt": {"msvc", "clang-cl", "clang"},
-    "linux": {"gcc"},
+    "linux": {"gcc", "clang"},
 }
 
 
@@ -755,6 +776,8 @@ def build_values(config):
         "PROJECT_DESCRIPTION": project.get("description", ""),
         "PROJECT_HOMEPAGE_URL": project.get("homepage_url", ""),
         "PROJECT_LANGUAGES": " ".join(project.get("languages", ["CXX"])),
+        "C_STANDARD": str(project.get("c_standard", "17")),
+        "CXX_STANDARD": str(project.get("cxx_standard", "23")),
         "GENERATOR": presets.get("generator", "Ninja"),
         "BINARY_DIR": presets.get("binary_dir", "${sourceDir}/out/build/${presetName}"),
         "ARCHITECTURE": canonical_choice(
@@ -767,7 +790,10 @@ def build_values(config):
         "JOBS": resolve_jobs(config),
         "INSTALL_DIR": user_cfg.get("install_dir", "${sourceDir}/out/install/${presetGroup}"),
         "QT_SUPPORT_DEFAULT": "ON" if qt_enabled else "OFF",
-        "QT_SDK_DIR": qt_cfg.get("sdk_dir", "D:/Qt/6.6.2/msvc2019_64"),
+        # Empty default: the compiler's find_package() locates a system-visible Qt
+        # on its own; baking a personal SDK path into the template would make the
+        # example fail on every machine except that one.
+        "QT_SDK_DIR": qt_cfg.get("sdk_dir", ""),
         "QT_COMPONENTS": " ".join(qt_cfg.get("components", ["Widgets"])),
         "QT_VENDOR_BASE": qt_vendor_json("qt-project.org/Qt", qt_checksum),
         "QT_VENDOR_ROOT": qt_vendor_json("qt-project.org/Presets", presets_checksum),
@@ -804,7 +830,7 @@ def main():
     process_cmake_presets(config, values)
     process_cmake_user_presets(config, values)
     process_subs(config, values)
-    copy_cmake_dir()
+    copy_cmake_dir(values)
     copy_remaining_root_items()
     verify_no_placeholders()
 
