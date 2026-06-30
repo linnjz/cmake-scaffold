@@ -50,11 +50,65 @@ cmake --install out/build/msvc_x64_debug
 
 ### 4. 运行测试
 
+```toml
+[project]
+test_enabled = true
+```
+
+启用后会把 `tests/` 复制到产物、在根 `CMakeLists.txt` 注入 `include(CTest)` + `enable_testing()`，并追加 `add_subdirectory(tests)`。自带的 `test_basic.cpp` 是一个不依赖三方库的 CTest 示例：
+
 ```powershell
+cmake --preset msvc_x64_debug
+cmake --build --preset build-msvc_x64_debug
 ctest --preset test-msvc_x64_debug
 ```
 
-测试预设始终存在；只有设置 `test_enabled = true`（注入 `include(CTest)` + `enable_testing()`）并注册用例后，`ctest` 才有东西可跑。
+新增用例只需一次调用，编译选项与工程目标一致：
+
+```cmake
+scaffold_add_test(my_feature_test
+    SOURCES my_feature_test.cpp
+    LIBS MyLib                    # 可选
+    INCLUDES "${CMAKE_SOURCE_DIR}/MyLib"
+)
+```
+
+测试预设始终存在；`test_enabled = false` 时不会复制 `tests/`，`ctest` 自然找不到用例。模板不强制测试框架：GoogleTest / Catch2 的 vcpkg 接入示例以注释形式放在 `tests/CMakeLists.txt`。
+
+### 5. 运行基准测试
+
+```toml
+[project]
+benchmark_enabled = true
+```
+
+基准测试默认使用 vcpkg 的 Google Benchmark。安装一次并让 configure 看到 `VCPKG_ROOT`：
+
+```powershell
+vcpkg install benchmark
+$env:VCPKG_ROOT = "E:/Development/vcpkg"
+```
+
+`MSVC_RUNTIME_MODE = "MT"` 时请安装 `benchmark:x64-windows-static`；动态 port 链接 `/MD`，模板会拒绝把它混入 `/MT` 工程。
+
+然后构建并运行示例：
+
+```powershell
+cmake --preset msvc_x64_debug
+cmake --build --preset build-msvc_x64_debug
+./out/build/msvc_x64_debug/artifacts/Debug/x64/bin/scaffold_benchmarks_basicd.exe
+```
+
+如果 `VCPKG_ROOT` 未设置或没有 `benchmark` port，configure 只打印 **WARNING** 并跳过 `benchmarks/`；测试和其余目标照常构建。新增基准测试：
+
+```cmake
+scaffold_add_benchmark(my_bench
+    SOURCES my_bench.cpp
+    LIBS MyLib                    # 可选
+)
+```
+
+便捷函数会链接 `benchmark::benchmark` + `benchmark::benchmark_main`（源文件只注册 `BENCHMARK(...)` 用例，不能定义 `main()`）、套用统一编译选项，并在动态 vcpkg triplet 下把 `benchmark*.dll` 拷到可执行文件旁。
 
 ### Qt
 
@@ -132,7 +186,8 @@ Linux 补充：`-fopenmp` 需要 libomp（Debian 上如 `libomp-19-dev`）；默
 | `c_standard` | int/string | `"17"` | 预设 `CMAKE_C_STANDARD`；同时烘焙进根 `CMakeLists.txt` 作为裸 `cmake -G Ninja` 的回退值 |
 | `cxx_standard` | int/string | `"23"` | 预设 `CMAKE_CXX_STANDARD`；同样有回退值 |
 | `jobs` | table | `{type="fixed", size=0}` | 并行度（见下） |
-| `test_enabled` | bool | `false` | 在根 `CMakeLists.txt` 注入 `include(CTest)` + `enable_testing()` |
+| `test_enabled` | bool | `false` | 复制 `tests/` 并加入构建，注入 `include(CTest)` + `enable_testing()` |
+| `benchmark_enabled` | bool | `false` | 复制 `benchmarks/` 并加入构建、include `Vcpkg`；vcpkg/Google Benchmark 不可用时 WARNING 跳过 benchmarks |
 
 `jobs` 解析为整数 `JOBS`，供 build / test 预设使用：
 
@@ -141,7 +196,7 @@ Linux 补充：`-fopenmp` 需要 libomp（Debian 上如 `libomp-19-dev`）；默
 - 核数 = Linux 的 `sched_getaffinity`，其它平台 `os.cpu_count()`。
 - 预设之外构建时，用 `CMAKE_BUILD_PARALLEL_LEVEL` **环境变量**控制并行度；它不是缓存变量。
 
-`test_enabled = false` 仍会生成 test 预设，但没有 `enable_testing()`，`ctest` 找不到用例；不想开开关时，可自行取消根 `CMakeLists.txt` 里被注释的那两行。
+`test_enabled = false` / `benchmark_enabled = false` 时，生成的工程里不会出现 `tests/` / `benchmarks/`。test 预设仍会生成，但没有 `enable_testing()`，`ctest` 找不到用例。两个开关都必须是布尔值；`tests` 与 `benchmarks` 是保留的子工程名。
 
 ### `[[project.sub]]`
 
@@ -204,6 +259,8 @@ MyApp/
 │   ├── CompilerOptions.cmake   # scaffold_configure_target()：编译选项、按配置选项
 │   ├── OutputLayout.cmake      # artifacts/<config>/<arch>/{bin,lib,pdb}
 │   ├── TargetUtils.cmake       # CopyTargetDependentLibs()、IMPORTED_LIBRARY()
+│   ├── TestSupport.cmake       # scaffold_add_test()（CTest 注册）
+│   ├── BenchmarkSupport.cmake  # scaffold_find_vcpkg_benchmark()、scaffold_add_benchmark()
 │   ├── Vcpkg.cmake             # vcpkg 根/triplet 推导 + FindVcpkgPackage()（可选）
 │   ├── PrebuiltLibraries.cmake # scaffold_add_prebuilt_library()（可选）
 │   ├── QtSupport.cmake         # QT_SUPPORT、SDK 路径、find_package(Qt6/Qt5)
@@ -218,10 +275,16 @@ MyApp/
 │   ├── CMakeLists.txt
 │   ├── math.cppm
 │   └── math.cpp
-└── src/
-    ├── CMakeLists.txt          # project() + 目标 + 选项 + 安装
-    ├── Dependencies.cmake      # 三方依赖配方（8 节）
-    └── main.cpp                # EXE 入口；使用 import std;
+├── src/
+│   ├── CMakeLists.txt          # project() + 目标 + 选项 + 安装
+│   ├── Dependencies.cmake      # 三方依赖配方（8 节）
+│   └── main.cpp                # EXE 入口；使用 import std;
+├── tests/                      # 仅 test_enabled = true 时生成
+│   ├── CMakeLists.txt          # scaffold_add_test() + vcpkg/GTest 注释示例
+│   └── test_basic.cpp          # 无三方依赖的 CTest 示例
+└── benchmarks/                 # 仅 benchmark_enabled = true 时生成
+    ├── CMakeLists.txt          # vcpkg benchmark 探测 + scaffold_add_benchmark()
+    └── benchmark_basic.cpp     # Google Benchmark 示例
 ```
 
 示例目标是 C++23 可执行文件，开头就是 `import std;`。`math` 模块库需要在根 `CMakeLists.txt` 加 `add_subdirectory(modules)`、并在 `src/CMakeLists.txt` 取消 `target_link_libraries(... math)` 的注释后才会参与构建。
@@ -234,8 +297,13 @@ MyApp/
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(ImportStd)        # 必须在 project() 之前：设置 import std 的实验 UUID
 project(...)
-include(CompilerId Platform ShowIncludesPrefix OutputLayout TargetUtils QtSupport ProtoGen)
+include(CompilerId Platform ShowIncludesPrefix OutputLayout)
+include(TargetUtils QtSupport ProtoGen)
+# src/、tests/、benchmarks/、modules/ 各自 include CompilerOptions，
+# 只有真正调用 scaffold_configure_target() 的目录才加载它。
 # include(Vcpkg) / include(PrebuiltLibraries)  # 按需启用
+# test_enabled 会加入 include(CTest) + enable_testing()
+add_subdirectory(src)     # 启用时还会追加 tests/ 与 benchmarks/
 ```
 
 | 模块 | 职责 |
@@ -245,6 +313,8 @@ include(CompilerId Platform ShowIncludesPrefix OutputLayout TargetUtils QtSuppor
 | `CompilerOptions` | `scaffold_configure_target(<target>)`：MSVC 选项集（`/std:c++latest /utf-8 /permissive- /W4 /arch:AVX2 /openmp:experimental /bigobj …`）或 GCC/Clang 选项集（`-std=c++… -Wall -Wextra -Werror -mavx2 -mfma -fopenmp …`）；用 `$<CONFIG:…>` 表达 Debug/Release/RelWithDebInfo；4 MiB 栈；sanitizer；ccache（GCC/Clang）；MSVC 系编译器加 `DEBUG_POSTFIX d` 与 PDB 命名 |
 | `OutputLayout` | 运行库/静态库/PDB 输出统一到 `artifacts/$<CONFIG>/$<arch>/…`，多配置生成器也能按配置分树 |
 | `TargetUtils` | `CopyTargetDependentLibs(target names release_dir [debug_dir])` 把运行时 DLL 拷到可执行文件旁（Debug 先试 `<name>d.dll`，Linux 支持带版本号的 `.so`）；`IMPORTED_LIBRARY(target base dir)` 封装手工分发的动态库 |
+| `TestSupport` | `scaffold_add_test(<target> SOURCES … [NAME] [LIBS] [INCLUDES] [ARGS] [WORKING_DIRECTORY])`：创建可执行目标、套用 `scaffold_configure_target()`、注册到 CTest |
+| `BenchmarkSupport` | `scaffold_find_vcpkg_benchmark(<out-var>)` 探测与 CRT 兼容的 vcpkg triplet；`scaffold_add_benchmark(<target> SOURCES … [LIBS] [INCLUDES])` 链接 Google Benchmark、套用统一编译选项、复制动态 `benchmark*.dll` |
 | `Vcpkg` | 推导 `VCPKG_ROOT`（toolchain 文件 → 缓存/环境 → 平台约定），按 `MSVC_RUNTIME_MODE` 选择 `VCPKG_STATIC_TRIPLET`（`<arch>-windows-static[-md]`），导出 `VCPKG_*_PATH`，并提供 `FindVcpkgPackage()` |
 | `PrebuiltLibraries` | `scaffold_add_prebuilt_library(<target> [STATIC] INCLUDE_DIR … [DEBUG_LOCATION/IMPLIB] [RELEASE_LOCATION/IMPLIB] …)` 创建 `IMPORTED GLOBAL` 目标与 `<name>::<name>` 别名；单配置库自动回退为通用 location。附带由 `THIRD_PARTY_ROOT` 驱动的示例 |
 | `QtSupport` | `option(QT_SUPPORT …)`、`AUTOMOC/AUTOUIC/AUTORCC`、`QT_SDK_DIR` → `CMAKE_PREFIX_PATH`、`find_package(Qt6/Qt5 …)` |
@@ -252,6 +322,28 @@ include(CompilerId Platform ShowIncludesPrefix OutputLayout TargetUtils QtSuppor
 | `ProjectTarget` | `scaffold_add_project_target()`（EXE/STATIC/SHARED，含 Qt5/6 分支）、`scaffold_add_qt_resources()`、`scaffold_finalize_project_target()`（Qt6 可执行目标 + 扫描补偿）、`scaffold_install_project_target()` |
 | `ProtoGen` | `scaffold_protobuf_generate()`：protobuf/gRPC 代码生成 |
 | `ShowIncludesPrefix` | 仅在 CMake < 4.4 + MSVC + Ninja 时重新探测本地化 `/showIncludes` 前缀；≥ 4.4 直接返回，因为 CMake 自带该机制（把原始代码页字节写进去会让 `rules.ninja` 静默缺失） |
+
+### 测试与基准测试
+
+`tests/CMakeLists.txt` 和 `benchmarks/CMakeLists.txt` 只依赖根 `CMAKE_MODULE_PATH` 提供模块查找路径。它们各自 include `CompilerOptions`，且 `BenchmarkSupport` 会在尚未加载时自行 include `Vcpkg`，因此根工程不需要为 benchmarks 预先启用 vcpkg：
+
+```cmake
+# tests/CMakeLists.txt
+include(CompilerOptions)
+include(TestSupport)
+scaffold_add_test(scaffold_tests_basic SOURCES test_basic.cpp)
+
+# benchmarks/CMakeLists.txt
+include(CompilerOptions)
+include(BenchmarkSupport)
+scaffold_find_vcpkg_benchmark(_found)
+if(NOT _found)
+    return()                       # 已打印 WARNING；其它目录照常构建
+endif()
+scaffold_add_benchmark(scaffold_benchmarks_basic SOURCES benchmark_basic.cpp)
+```
+
+两个目录只会在对应 TOML 开关为 true 时复制，生成的根工程不会引用不存在的目录。`MD` 下 benchmark 先探测动态 triplet，再回退 `*-static-md`（两者都是 `/MD`）；`MT` 下只接受 `/MT` 静态 triplet，缺库时跳过 benchmarks，绝不会把 `/MD` 库混进工程。测试框架交给项目自行选择；GoogleTest/Catch2 的 vcpkg 接入示例在生成的 `tests/CMakeLists.txt` 中。
 
 ### `import std;` 说明
 
@@ -316,7 +408,8 @@ configure / build / test 三层预设的 `hidden` 会被统一改写：编译器
 | `project.languages` | 非空数组，每项为单 token |
 | `project.homepage_url` | 不含换行 |
 | `project.jobs` | `type` ∈ `fixed`/`factor`；`size` 为整数（fixed）或数字（factor）；布尔/字符串一律拒绝 |
-| `[[project.sub]].name` | 同 `project.name`；不重复（大小写不敏感）；不能占用 `cmake`、`modules` |
+| `project.test_enabled` / `benchmark_enabled` | 必须是布尔 |
+| `[[project.sub]].name` | 同 `project.name`；不重复（大小写不敏感）；不能占用 `cmake`、`modules`、`tests`、`benchmarks` |
 | `[[project.sub]].target_type` | `EXE` / `STATIC` / `SHARED` |
 | `[[project.sub]].win32_executable` / `macos_bundle` | 必须是布尔 |
 | `[presets]` | `architecture`、`generator`、`msvc_runtime_mode`、`msvc_toolset`、`binary_dir` |
@@ -339,7 +432,7 @@ configure / build / test 三层预设的 `hidden` 会被统一改写：编译器
 
 ## 已知限制
 
-- **模板不带测试用例。** `template/` 没有 `add_test()`；需要自己打开 `test_enabled` 并注册测试。
+- **benchmark 需要 vcpkg + Google Benchmark。** `benchmark_enabled = true` 但未设置 `VCPKG_ROOT` 或缺少 `benchmark` port 时只打印 WARNING 并跳过 `benchmarks/`，工程其余部分不受影响。模板不捆绑测试框架；`test_enabled = true` 才会生成测试示例。
 - **`import std;` 依赖工具链。** MSVC 14.5x 可用；CMake < 4.4 需要编译器自带 std 模块且只允许一个 std FILE_SET 目标；clang-cl 必须 CMake ≥ 4.4；Clang 需要 libc++（或自带 std 模块的 libstdc++）；GCC 需要 15+。
 - **预设的 `condition` 只覆盖 Windows 与 Linux。** `msvc`/`clang-cl` 要求 Windows，`gcc` 要求 Linux，`clang` 限定 Windows/Linux；macOS 尚未接线。
 - **x86-64 基线。** `CompilerOptions.cmake` 固定了 `/arch:AVX2` / `-mavx2 -mfma`；使用 ARM 预设时需要调整这一段。

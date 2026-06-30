@@ -40,7 +40,7 @@ KNOWN_GENERATORS = [
 
 # Sub directory names the generator itself owns in the output root; a [[project.sub]] using one of
 # them would silently merge with the copied template directory (duplicate add_subdirectory/target).
-RESERVED_SUB_DIR_NAMES = {"cmake", "modules"}
+RESERVED_SUB_DIR_NAMES = {"cmake", "modules", "tests", "benchmarks"}
 
 PLACEHOLDER_RE = re.compile(r"#\{([A-Za-z_][A-Za-z0-9_]*)\}")
 # Values injected into CMake quoted arguments, where a raw '"', '\', ';' or newline would either
@@ -180,6 +180,10 @@ def validate(config):
         fail("project.languages must be a non-empty array, e.g. [\"C\", \"CXX\"]")
     for language in languages:
         require_token(language, "project.languages entry")
+
+    for flag in ("test_enabled", "benchmark_enabled"):
+        if flag in project and not isinstance(project[flag], bool):
+            fail(f"project.{flag} must be a boolean")
 
     check_subset(user_cfg.get("compilers", []), ALL_COMPILERS, "presets.user.compilers")
     check_subset(user_cfg.get("build_types", []), ALL_BUILD_TYPES, "presets.user.build_types")
@@ -440,15 +444,20 @@ def process_cmake_presets(config, values):
     write_file(dest, json.dumps(data, indent=2))
 
 
-def process_root_cmakelists(values, sub_dirs):
+def process_root_cmakelists(config, values, sub_dirs):
     src = TEMPLATE_DIR / "CMakeLists.txt"
     dest = OUTPUT_DIR / "CMakeLists.txt"
 
     content = replace_placeholders(read_file(src), for_cmake(values), src.name)
 
-    add_sub_lines = []
-    for sub_dir_name, _, _ in sub_dirs:
-        add_sub_lines.append(f"add_subdirectory({sub_dir_name})")
+    project = config.get("project", {})
+    add_sub_lines = [f"add_subdirectory({sub_dir_name})" for sub_dir_name, _, _ in sub_dirs]
+    # Auxiliary directories are opt-in: they are copied only when enabled, so
+    # the add_subdirectory() call would otherwise point at a missing directory.
+    if project.get("test_enabled", False):
+        add_sub_lines.append("add_subdirectory(tests)")
+    if project.get("benchmark_enabled", False):
+        add_sub_lines.append("add_subdirectory(benchmarks)")
     if add_sub_lines:
         content += "\n\n" + "\n".join(add_sub_lines) + "\n"
 
@@ -501,9 +510,24 @@ def process_subs(config, values):
                 copy_file(item, dest)
 
 
+def copy_aux_dir(name):
+    src = TEMPLATE_DIR / name
+    if not src.is_dir():
+        fail(f"{src} is missing; cannot enable {name}")
+    copy_tree(src, OUTPUT_DIR / name)
+
+
 def copy_remaining_root_items():
     for item in TEMPLATE_DIR.iterdir():
-        if item.name in ("CMakeLists.txt", "CMakePresets.json", "CMakeUserPresets.json", "cmake", "src"):
+        if item.name in (
+            "CMakeLists.txt",
+            "CMakePresets.json",
+            "CMakeUserPresets.json",
+            "cmake",
+            "src",
+            "tests",
+            "benchmarks",
+        ):
             continue
         dest = OUTPUT_DIR / item.name
         if item.is_dir():
@@ -560,9 +584,9 @@ def env_pollution(name):
     if value is None:
         return None
     if "\n" in value or "\r" in value:
-        return "含换行符 (LF/CR)"
+        return "contains a line break (LF/CR)"
     if value != value.strip():
-        return "首尾含空白"
+        return "has leading/trailing whitespace"
     return None
 
 
@@ -603,46 +627,46 @@ def check_windows_sdk():
     lib = split_env_paths(os.environ.get("LIB", ""))
 
     if not include:
-        problems.append("INCLUDE 未设置，缺少 Windows SDK / MSVC 头文件路径")
+        problems.append("INCLUDE is not set; Windows SDK / MSVC header paths are missing")
     else:
         for label, needles in (
-            ("Windows SDK ucrt 头目录", ("windows kits", "ucrt")),
-            ("Windows SDK um 头目录", ("windows kits", "\\um")),
-            ("MSVC C++ 头目录", ("vc\\tools\\msvc", "include")),
+            ("Windows SDK ucrt header directory", ("windows kits", "ucrt")),
+            ("Windows SDK um header directory", ("windows kits", "\\um")),
+            ("MSVC C++ header directory", ("vc\\tools\\msvc", "include")),
         ):
             hits = find_env_entries(include, *needles)
             if not hits:
-                problems.append(f"INCLUDE 缺少{label}")
+                problems.append(f"INCLUDE is missing the {label}")
             elif not os.path.isdir(hits[0]):
-                problems.append(f"{label}不存在：{hits[0]}")
+                problems.append(f"{label} does not exist: {hits[0]}")
 
     if not lib:
-        problems.append("LIB 未设置，缺少 Windows SDK / MSVC 库路径")
+        problems.append("LIB is not set; Windows SDK / MSVC library paths are missing")
     else:
         for label, needles in (
-            ("Windows SDK ucrt 库目录", ("windows kits", "ucrt")),
-            ("Windows SDK um 库目录", ("windows kits", "\\um")),
-            ("MSVC 库目录", ("vc\\tools\\msvc", "lib")),
+            ("Windows SDK ucrt library directory", ("windows kits", "ucrt")),
+            ("Windows SDK um library directory", ("windows kits", "\\um")),
+            ("MSVC library directory", ("vc\\tools\\msvc", "lib")),
         ):
             hits = find_env_entries(lib, *needles)
             if not hits:
-                problems.append(f"LIB 缺少{label}")
+                problems.append(f"LIB is missing the {label}")
             elif not os.path.isdir(hits[0]):
-                problems.append(f"{label}不存在：{hits[0]}")
+                problems.append(f"{label} does not exist: {hits[0]}")
     return problems
 
 
 def check_msvc():
     problems = []
     if not shutil.which("cl.exe") and not shutil.which("cl"):
-        problems.append("未在 PATH 找到 cl.exe（MSVC 编译器）")
+        problems.append("cl.exe (MSVC compiler) was not found on PATH")
     return problems + check_windows_sdk()
 
 
 def check_clang_cl():
     problems = []
     if not shutil.which("clang-cl.exe") and not shutil.which("clang-cl"):
-        problems.append("未在 PATH 找到 clang-cl.exe")
+        problems.append("clang-cl.exe was not found on PATH")
     return problems + check_windows_sdk()
 
 
@@ -651,15 +675,15 @@ def check_clang():
     clang = shutil.which("clang") or shutil.which("clang.exe")
     clangxx = shutil.which("clang++") or shutil.which("clang++.exe")
     if not clang:
-        problems.append("未在 PATH 找到 clang")
+        problems.append("clang was not found on PATH")
     if not clangxx:
-        problems.append("未在 PATH 找到 clang++")
+        problems.append("clang++ was not found on PATH")
     if clang:
         resource = probe(clang, ["-print-resource-dir"])
         if not resource:
-            problems.append("无法获取 clang 资源目录（clang -print-resource-dir）")
+            problems.append("could not determine the clang resource directory (clang -print-resource-dir)")
         elif not os.path.isdir(os.path.join(resource, "include")):
-            problems.append(f"clang 头文件目录不存在：{os.path.join(resource, 'include')}")
+            problems.append(f"clang include directory does not exist: {os.path.join(resource, 'include')}")
     if os.name == "nt":
         problems += check_windows_sdk()
     return problems
@@ -670,16 +694,16 @@ def check_gcc():
     gcc = shutil.which("gcc")
     gxx = shutil.which("g++")
     if not gcc:
-        problems.append("未在 PATH 找到 gcc")
+        problems.append("gcc was not found on PATH")
     if not gxx:
-        problems.append("未在 PATH 找到 g++")
+        problems.append("g++ was not found on PATH")
     if gxx:
         include_dir = probe(gxx, ["-print-file-name=include"])
         if include_dir and not os.path.isdir(include_dir):
-            problems.append(f"gcc 头文件目录不存在：{include_dir}")
+            problems.append(f"gcc include directory does not exist: {include_dir}")
         libstdcxx = probe(gxx, ["-print-file-name=libstdc++.a"])
         if libstdcxx == "libstdc++.a":
-            problems.append("未找到 libstdc++ 库")
+            problems.append("libstdc++ was not found")
     return problems
 
 
@@ -755,8 +779,8 @@ def check_environment(config):
 def testing_setup(project):
     if project.get("test_enabled", False):
         return "include(CTest)\nenable_testing()"
-    return ("# 测试未启用：在 project.toml 的 [project] 中设置 test_enabled = true，\n"
-            "# 或自行取消下面两行注释；否则 ctest 找不到任何用例\n"
+    return ("# Tests are disabled: set test_enabled = true in [project] of project.toml,\n"
+            "# or uncomment the two lines below; otherwise ctest finds no tests.\n"
             "# include(CTest)\n"
             "# enable_testing()")
 
@@ -826,10 +850,14 @@ def main():
                 "Close editors/terminals and any running build using that directory, then retry."
             )
 
-    process_root_cmakelists(values, sub_dirs)
+    process_root_cmakelists(config, values, sub_dirs)
     process_cmake_presets(config, values)
     process_cmake_user_presets(config, values)
     process_subs(config, values)
+    if project.get("test_enabled", False):
+        copy_aux_dir("tests")
+    if project.get("benchmark_enabled", False):
+        copy_aux_dir("benchmarks")
     copy_cmake_dir(values)
     copy_remaining_root_items()
     verify_no_placeholders()

@@ -35,7 +35,9 @@ include(QtSupport)
 # generate proto code.
 include(ProtoGen)
 
-# Comes with third-party libraries and vcpkg management; whichever is added to the search path first will be found first.
+# Third-party libraries and vcpkg management. When benchmarks are enabled,
+# BenchmarkSupport includes Vcpkg.cmake from benchmarks/; uncomment it here for
+# other vcpkg packages (a second include() is a no-op).
 #include(Vcpkg)              # vcpkg packages (see cmake/Vcpkg.cmake)
 #include(PrebuiltLibraries)  # pre-built libraries imported by hand (sample in cmake/PrebuiltLibraries.cmake)
 

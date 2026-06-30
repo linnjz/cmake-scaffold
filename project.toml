@@ -12,9 +12,14 @@ cxx_standard = 23
 # Watch out for floating-point multiplication truncation
 # Python automatic range correction
 jobs = { type = "fixed", size = 0 }
-# Whether to inject include(CTest) + enable_testing() in the root CMakeLists.txt
-# When false, testPresets are generated as usual, but ctest has no tests to run; you can manually add those two lines to fix it
+# Whether to copy tests/ and add_subdirectory(tests) (injects include(CTest) +
+# enable_testing() in the root CMakeLists.txt). When false, testPresets are
+# generated as usual, but ctest has no tests to run.
 test_enabled = false
+# Whether to copy benchmarks/ and add_subdirectory(benchmarks). Benchmarks use
+# the vcpkg-provided Google Benchmark port; when VCPKG_ROOT or that port is
+# missing the directory is skipped with a WARNING and the rest still builds.
+benchmark_enabled = false
 
 [[project.sub]]
 name = ""

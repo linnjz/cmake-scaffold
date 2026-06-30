@@ -50,11 +50,65 @@ cmake --install out/build/msvc_x64_debug
 
 ### 4. Run tests
 
+```toml
+[project]
+test_enabled = true
+```
+
+Enabling it copies `tests/` into the output, injects `include(CTest)` + `enable_testing()` into the root `CMakeLists.txt`, and adds `add_subdirectory(tests)`. The shipped `test_basic.cpp` is a dependency-free CTest example:
+
 ```powershell
+cmake --preset msvc_x64_debug
+cmake --build --preset build-msvc_x64_debug
 ctest --preset test-msvc_x64_debug
 ```
 
-Test presets always exist; they only find something once `test_enabled = true` (which injects `include(CTest)` + `enable_testing()`) and tests are registered.
+Register another test with one call; the helper applies the same compiler options as the project targets:
+
+```cmake
+scaffold_add_test(my_feature_test
+    SOURCES my_feature_test.cpp
+    LIBS MyLib                    # optional
+    INCLUDES "${CMAKE_SOURCE_DIR}/MyLib"
+)
+```
+
+Test presets always exist; with `test_enabled = false` the `tests/` directory is not copied, so `ctest` finds nothing. Third-party frameworks (GoogleTest, Catch2, …) are not imposed: `tests/CMakeLists.txt` contains a commented vcpkg recipe to add them.
+
+### 5. Run benchmarks
+
+```toml
+[project]
+benchmark_enabled = true
+```
+
+Benchmarks use the vcpkg Google Benchmark port. Install it once and make `VCPKG_ROOT` visible to configure:
+
+```powershell
+vcpkg install benchmark
+$env:VCPKG_ROOT = "E:/Development/vcpkg"
+```
+
+For `MSVC_RUNTIME_MODE = "MT"`, install `benchmark:x64-windows-static` instead; the dynamic port links `/MD` and is refused rather than mixed into an `/MT` build.
+
+Then build and run the generated example:
+
+```powershell
+cmake --preset msvc_x64_debug
+cmake --build --preset build-msvc_x64_debug
+./out/build/msvc_x64_debug/artifacts/Debug/x64/bin/scaffold_benchmarks_basicd.exe
+```
+
+If `VCPKG_ROOT` is unset or the `benchmark` port is not installed, configure prints a **WARNING** and skips `benchmarks/` only; tests and all other targets still build. Add another benchmark with:
+
+```cmake
+scaffold_add_benchmark(my_bench
+    SOURCES my_bench.cpp
+    LIBS MyLib                    # optional
+)
+```
+
+The helper links `benchmark::benchmark` + `benchmark::benchmark_main` (the source registers `BENCHMARK(...)` cases and must not define `main()`), applies the shared compiler options, and copies `benchmark*.dll` next to the binary for dynamic vcpkg triplets.
 
 ### Qt
 
@@ -132,7 +186,8 @@ Linux notes: `-fopenmp` needs libomp (e.g. `libomp-19-dev` on Debian); the defau
 | `c_standard` | int/string | `"17"` | Preset `CMAKE_C_STANDARD`; also baked into the root `CMakeLists.txt` as a fallback for plain `cmake -G Ninja` |
 | `cxx_standard` | int/string | `"23"` | Preset `CMAKE_CXX_STANDARD`; same fallback |
 | `jobs` | table | `{type="fixed", size=0}` | Parallelism (see below) |
-| `test_enabled` | bool | `false` | Injects `include(CTest)` + `enable_testing()` into the root `CMakeLists.txt` |
+| `test_enabled` | bool | `false` | Copies `tests/`, adds it to the build, injects `include(CTest)` + `enable_testing()` |
+| `benchmark_enabled` | bool | `false` | Copies `benchmarks/`, adds it to the build, includes `Vcpkg`; skips benchmarks with a warning when vcpkg/Google Benchmark is unavailable |
 
 `jobs` becomes the integer `JOBS` used by build and test presets:
 
@@ -141,7 +196,7 @@ Linux notes: `-fopenmp` needs libomp (e.g. `libomp-19-dev` on Debian); the defau
 - Cores = `sched_getaffinity` on Linux, `os.cpu_count()` elsewhere.
 - Outside presets, use the `CMAKE_BUILD_PARALLEL_LEVEL` **environment variable**; it is not a cache variable.
 
-`test_enabled = false` still generates test presets, but without `enable_testing()` `ctest` finds nothing; uncomment the two injected lines if you want tests without the flag.
+`test_enabled = false` and `benchmark_enabled = false` leave the `tests/` and `benchmarks/` directories out of the generated project. Test presets are still generated, but without `enable_testing()` `ctest` finds nothing. Both flags must be booleans. `tests` and `benchmarks` are reserved sub-project names.
 
 ### `[[project.sub]]`
 
@@ -204,6 +259,8 @@ MyApp/
 │   ├── CompilerOptions.cmake   # scaffold_configure_target(): flags, per-config options
 │   ├── OutputLayout.cmake      # artifacts/<config>/<arch>/{bin,lib,pdb}
 │   ├── TargetUtils.cmake       # CopyTargetDependentLibs(), IMPORTED_LIBRARY()
+│   ├── TestSupport.cmake       # scaffold_add_test() (CTest registration)
+│   ├── BenchmarkSupport.cmake  # scaffold_find_vcpkg_benchmark(), scaffold_add_benchmark()
 │   ├── Vcpkg.cmake             # root/triplet detection + FindVcpkgPackage()   (opt-in)
 │   ├── PrebuiltLibraries.cmake # scaffold_add_prebuilt_library()              (opt-in)
 │   ├── QtSupport.cmake         # QT_SUPPORT, SDK path, find_package(Qt6/Qt5)
@@ -218,10 +275,16 @@ MyApp/
 │   ├── CMakeLists.txt
 │   ├── math.cppm
 │   └── math.cpp
-└── src/
-    ├── CMakeLists.txt          # project() + target + options + install
-    ├── Dependencies.cmake      # third-party recipes (8 sections)
-    └── main.cpp                # EXE entry point; uses import std;
+├── src/
+│   ├── CMakeLists.txt          # project() + target + options + install
+│   ├── Dependencies.cmake      # third-party recipes (8 sections)
+│   └── main.cpp                # EXE entry point; uses import std;
+├── tests/                      # only when test_enabled = true
+│   ├── CMakeLists.txt          # scaffold_add_test() + commented vcpkg/GTest recipe
+│   └── test_basic.cpp          # dependency-free CTest example
+└── benchmarks/                 # only when benchmark_enabled = true
+    ├── CMakeLists.txt          # vcpkg benchmark probe + scaffold_add_benchmark()
+    └── benchmark_basic.cpp     # Google Benchmark example
 ```
 
 The example target is a C++23 executable that starts with `import std;`. The `math` module library is only built after you add `add_subdirectory(modules)` to the root `CMakeLists.txt` and uncomment the `target_link_libraries(... math)` line in `src/CMakeLists.txt`.
@@ -234,8 +297,13 @@ The root `CMakeLists.txt` is a short skeleton:
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(ImportStd)        # must run before project(): sets the import-std UUID
 project(...)
-include(CompilerId Platform ShowIncludesPrefix OutputLayout TargetUtils QtSupport ProtoGen)
+include(CompilerId Platform ShowIncludesPrefix OutputLayout)
+include(TargetUtils QtSupport ProtoGen)
+# src/, tests/, benchmarks/ and modules/ include CompilerOptions themselves,
+# so only the directories that call scaffold_configure_target() load it.
 # include(Vcpkg) / include(PrebuiltLibraries)  # opt-in
+# test_enabled adds include(CTest) + enable_testing()
+add_subdirectory(src)     # plus tests/ and benchmarks/ when enabled
 ```
 
 | Module | What it does |
@@ -245,6 +313,8 @@ include(CompilerId Platform ShowIncludesPrefix OutputLayout TargetUtils QtSuppor
 | `CompilerOptions` | `scaffold_configure_target(<target>)`: MSVC option set (`/std:c++latest /utf-8 /permissive- /W4 /arch:AVX2 /openmp:experimental /bigobj …`) or GCC/Clang set (`-std=c++… -Wall -Wextra -Werror -mavx2 -mfma -fopenmp …`); per-config Debug/Release/RelWithDebInfo options via `$<CONFIG:…>`; 4 MiB stack; sanitizers; ccache (GCC/Clang); `DEBUG_POSTFIX d` and PDB names for MSVC-like compilers |
 | `OutputLayout` | Runtime/library/archive/PDB outputs under `artifacts/$<CONFIG>/$<arch>/…`, so multi-config generators get one tree per configuration |
 | `TargetUtils` | `CopyTargetDependentLibs(target names release_dir [debug_dir])` copies runtime DLLs next to the binary (tries `<name>d.dll` first in Debug, versioned `.so` on Linux); `IMPORTED_LIBRARY(target base dir)` wraps a hand-shipped shared library |
+| `TestSupport` | `scaffold_add_test(<target> SOURCES … [NAME] [LIBS] [INCLUDES] [ARGS] [WORKING_DIRECTORY])`: creates the executable, applies `scaffold_configure_target()`, registers it with CTest |
+| `BenchmarkSupport` | `scaffold_find_vcpkg_benchmark(<out-var>)` probes the CRT-compatible vcpkg triplet(s); `scaffold_add_benchmark(<target> SOURCES … [LIBS] [INCLUDES])` links Google Benchmark, applies the shared options, copies dynamic `benchmark*.dll` |
 | `Vcpkg` | Detects `VCPKG_ROOT` (toolchain file → cache/env → platform conventions), sets `VCPKG_STATIC_TRIPLET` (`<arch>-windows-static[-md]` following `MSVC_RUNTIME_MODE`), exposes `VCPKG_*_PATH`, and provides `FindVcpkgPackage()` |
 | `PrebuiltLibraries` | `scaffold_add_prebuilt_library(<target> [STATIC] INCLUDE_DIR … [DEBUG_LOCATION/IMPLIB] [RELEASE_LOCATION/IMPLIB] …)` creates an `IMPORTED GLOBAL` target plus a `<name>::<name>` alias; single-config libraries fall back to a generic location. A `THIRD_PARTY_ROOT`-driven sample is included |
 | `QtSupport` | `option(QT_SUPPORT …)`, `AUTOMOC/AUTOUIC/AUTORCC`, `QT_SDK_DIR` → `CMAKE_PREFIX_PATH`, `find_package(Qt6/Qt5 …)` |
@@ -252,6 +322,28 @@ include(CompilerId Platform ShowIncludesPrefix OutputLayout TargetUtils QtSuppor
 | `ProjectTarget` | `scaffold_add_project_target()` (EXE/STATIC/SHARED, Qt5/6 variants), `scaffold_add_qt_resources()`, `scaffold_finalize_project_target()` (Qt6 executables + module-scanning fixups), `scaffold_install_project_target()` |
 | `ProtoGen` | `scaffold_protobuf_generate()` for protobuf/gRPC |
 | `ShowIncludesPrefix` | Re-detects the localized `/showIncludes` prefix on CMake < 4.4 with MSVC + Ninja; on ≥ 4.4 it returns immediately because CMake does this itself (writing raw code-page bytes there silently breaks `rules.ninja`) |
+
+### Tests and benchmarks
+
+`tests/CMakeLists.txt` and `benchmarks/CMakeLists.txt` rely on the root `CMAKE_MODULE_PATH` for module lookup. Each includes `CompilerOptions` itself, and `BenchmarkSupport` includes `Vcpkg` when it has not been loaded yet, so the root does not need to enable vcpkg for benchmarks:
+
+```cmake
+# tests/CMakeLists.txt
+include(CompilerOptions)
+include(TestSupport)
+scaffold_add_test(scaffold_tests_basic SOURCES test_basic.cpp)
+
+# benchmarks/CMakeLists.txt
+include(CompilerOptions)
+include(BenchmarkSupport)
+scaffold_find_vcpkg_benchmark(_found)
+if(NOT _found)
+    return()                       # already warned; other directories still build
+endif()
+scaffold_add_benchmark(scaffold_benchmarks_basic SOURCES benchmark_basic.cpp)
+```
+
+Both directories are copied only when their TOML flag is true, so the generated root never references a missing directory. With `MD`, benchmark probing tries the dynamic triplet, then `*-static-md` (both `/MD`). With `MT`, it accepts only the `/MT` static triplet and skips benchmarks rather than mixing a `/MD` library into the build. Third-party test frameworks are left to the project; the vcpkg recipe for GoogleTest/Catch2 is in the generated `tests/CMakeLists.txt`.
 
 ### `import std;` notes
 
@@ -316,7 +408,8 @@ Semantics: single pass (a value containing `#{OTHER}` is not expanded again); CM
 | `project.languages` | Non-empty array of single tokens |
 | `project.homepage_url` | No newline |
 | `project.jobs` | `type` ∈ `fixed`/`factor`; `size` integer (fixed) or number (factor); booleans/strings rejected |
-| `[[project.sub]].name` | Same as `project.name`; unique (case-insensitive); may not be `cmake` or `modules` |
+| `project.test_enabled` / `benchmark_enabled` | Must be booleans |
+| `[[project.sub]].name` | Same as `project.name`; unique (case-insensitive); may not be `cmake`, `modules`, `tests` or `benchmarks` |
 | `[[project.sub]].target_type` | `EXE` / `STATIC` / `SHARED` |
 | `[[project.sub]].win32_executable` / `macos_bundle` | Booleans |
 | `[presets]` | `architecture`, `generator`, `msvc_runtime_mode`, `msvc_toolset`, `binary_dir` |
@@ -339,7 +432,7 @@ Semantics: single pass (a value containing `#{OTHER}` is not expanded again); CM
 
 ## Known limitations
 
-- **No tests are shipped.** `template/` has no `add_test()`; enable `test_enabled` and register tests yourself.
+- **Benchmarks require vcpkg + Google Benchmark.** `benchmark_enabled = true` without `VCPKG_ROOT` or the `benchmark` port only warns and skips `benchmarks/`; the rest of the project is unaffected. No test framework is bundled, and no tests exist until `test_enabled = true`.
 - **`import std;` depends on the toolchain.** MSVC 14.5x works; CMake < 4.4 needs a compiler-shipped std module and allows only one std FILE_SET target; clang-cl requires CMake ≥ 4.4; Clang needs libc++ (or a libstdc++ that ships a std module); GCC needs 15+.
 - **Preset conditions cover Windows and Linux only.** `msvc`/`clang-cl` presets require Windows, `gcc` requires Linux, and `clang` presets are conditioned on Windows or Linux; macOS is not wired up.
 - **x86-64 baseline.** `CompilerOptions.cmake` hard-codes `/arch:AVX2` / `-mavx2 -mfma`; ARM presets need that block adjusted.
